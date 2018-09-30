@@ -55,3 +55,63 @@ class JavData:
             print('  p_number is None')
         print(' ')
 
+
+class MakerData:
+
+    def __init__(self):
+        self.id = -1
+        self.name = ''
+        self.matchName = ''
+        self.label = ''
+        self.kind = 0
+        self.matchStr = ''
+        self.matchProductNumber = ''
+        self.siteKind = 0
+        self.replaceWords = ''
+        self.pNumberGen = 0
+        self.registeredBy = ''
+        self.createdAt = None
+        self.updatedAt = None
+
+    def get_maker(self, javLabel):
+
+        if self.id == 835:
+            return self.name + '：' + javLabel
+
+        if not self.label or len(self.label) <= 0:
+            return self.name
+
+        return self.name + '：' + self.label
+
+    def print(self):
+        print('【' + self.name + ':' + self.label + '】')
+        print('  kind    [' + str(self.kind) + ']')
+        print('  match   [' + self.matchStr + ']')
+        print('  match_p [' + self.matchProductNumber + ']')
+        print('  created [' + str(self.createdAt) + ']')
+        print('  updated [' + str(self.updatedAt) + ']')
+        print(' ')
+
+
+class ImportData:
+
+    def __init__(self):
+        self.id = -1
+        self.copy_text = ''
+        self.kind = 0
+        self.matchStr = ''
+        self.productNumber = ''
+        self.sellDate = None
+        self.maker = ''
+        self.title = ''
+        self.actress = ''
+        self.isRar = False
+        self.tag = False
+        self.filename = ''
+        self.hd_kind = 0
+        self.isSplit = False
+        self.isNameOnly = False
+        self.url = ''
+        self.postDate = None
+        self.rating = 0
+

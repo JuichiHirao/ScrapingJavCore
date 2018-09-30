@@ -4,7 +4,23 @@ from .. import data
 
 class JavDao(mysql_base.MysqlBase):
 
-    def get_jav_where_agreement(self, where):
+    def get_all(self):
+
+        sql = self.__get_sql_select()
+        sql = sql + " ORDER BY post_date "
+
+        self.cursor.execute(sql)
+
+        rs = self.cursor.fetchall()
+
+        javs = self.__get_list(rs)
+
+        if javs is None or len(javs) <= 0:
+            return None
+
+        return javs
+
+    def get_where_agreement(self, where):
 
         sql = self.__get_sql_select()
         sql = sql + where
@@ -60,3 +76,37 @@ class JavDao(mysql_base.MysqlBase):
             javs.append(jav)
 
         return javs
+
+    def update_is_selection(self, id, is_selection):
+
+        sql = 'UPDATE jav ' \
+              '  SET is_selection = %s ' \
+              '  WHERE id = %s'
+
+        self.cursor.execute(sql, (is_selection, id))
+        print("jav update id [" + str(id) + "] is_selection")
+
+        self.conn.commit()
+
+    def update_product_number(self, id, product_number):
+
+        sql = 'UPDATE jav ' \
+              '  SET product_number = %s ' \
+              '  WHERE id = %s'
+
+        self.cursor.execute(sql, (product_number, id))
+        print("jav update id [" + str(id) + "] product_number")
+
+        self.conn.commit()
+
+    def update_checked_ok(self, is_parse2, makers_id, javData):
+
+        sql = 'UPDATE jav ' \
+              '  SET is_parse2 = %s ' \
+              '    , scraping.jav.makers_id = %s ' \
+              '  WHERE id = %s'
+
+        self.cursor.execute(sql, (is_parse2, makers_id, javData.id))
+        print("jav update id [" + str(javData.id) + "] checked_ok")
+
+        self.conn.commit()
