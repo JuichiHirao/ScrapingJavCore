@@ -10,6 +10,7 @@ class ProductNumber:
         self.makers = []
 
         self.maker_dao = db.maker.MakerDao()
+        self.jav_dao = db.jav.JavDao()
         self.makers = self.maker_dao.get_all()
         self.fc2 = site.fc2.Fc2()
 
@@ -50,7 +51,7 @@ class ProductNumber:
                     print('OK メーカー完全一致と、タイトル内に製品番号一致 [' + jav.maker + ']' + jav.title)
                     if not is_check:
                         ng_reason = 1
-                        self.db.update_jav_checked_ok(ng_reason, match_maker.id, jav)
+                        self.jav_dao.update_checked_ok(ng_reason, match_maker.id, jav)
                 else:
                     print('NG メーカー完全一致だが、タイトル内に製品番号が一致しない [' + jav.maker + ']' + jav.title)
                     ng_reason = -1
@@ -67,7 +68,7 @@ class ProductNumber:
                     print('OK メーカーと、タイトル内に製品番号一つだけ一致 [' + jav.maker + ':' + jav.label + ']' + jav.title)
                     if not is_check:
                         ng_reason = 2
-                        self.db.update_jav_checked_ok(ng_reason, match_maker.id, jav)
+                        self.jav_dao.update_checked_ok(ng_reason, match_maker.id, jav)
                 elif len_label > 1:
                     if len(jav.label) <= 0:
                         find_filter_label = filter(lambda maker: len(maker.label) == 0, find_list_label)
@@ -79,7 +80,7 @@ class ProductNumber:
                         print('OK メーカーと、タイトル内に製品番号複数一致 & label一致 [' + jav.maker + ':' + jav.label + ']' + jav.title)
                         if not is_check:
                             ng_reason = 3
-                            self.db.update_jav_checked_ok(ng_reason, match_maker.id, jav)
+                            self.jav_dao.update_checked_ok(ng_reason, match_maker.id, jav)
                     else:
                         print('NG メーカーと、タイトル内に製品番号複数一致 [' + jav.maker + ']' + jav.title)
                         ng_reason = -2
@@ -146,7 +147,7 @@ class ProductNumber:
                     p_number = m.group().strip()
                 if not is_check:
                     ng_reason = 4
-                    self.db.update_jav_checked_ok(ng_reason, match_maker.id, jav)
+                    self.jav_dao.update_checked_ok(ng_reason, match_maker.id, jav)
             elif len(find_list_maker) > 1:
                 print(str(len(find_list_maker)) + ' many match ' + jav.title)
                 ng_reason = -6
@@ -174,7 +175,7 @@ class ProductNumber:
 
         if ng_reason < 0:
             if not is_check:
-                self.db.update_jav_checked_ok(ng_reason, 0, jav)
+                self.jav_dao.update_checked_ok(ng_reason, 0, jav)
 
         if is_nomatch:
             p_number = ''
@@ -191,7 +192,7 @@ class ProductNumber:
                         'OK 製品番号PARSE maker.matchStrに1件だけ一致 [' + p_maker + ']' + match_maker.name + ':' + match_maker.label)
                     if not is_check:
                         ng_reason = 5
-                        self.db.update_jav_checked_ok(ng_reason, match_maker.id, jav)
+                        self.jav_dao.update_checked_ok(ng_reason, match_maker.id, jav)
                 if len(find_list_maker) > 1:
                     print('NG 製品番号PARSE maker.matchStrに複数一致 [' + str(jav.id) + '] ' + jav.title)
                 if len(find_list_maker) <= 0:
