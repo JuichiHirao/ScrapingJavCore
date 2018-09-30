@@ -56,6 +56,45 @@ class JavData:
         print(' ')
 
 
+class Jav2Data:
+
+    def __init__(self):
+        self.id = -1
+        self.title = ''
+        self.downloadLinks = ''
+        self.kind = ''
+        self.url = ''
+        self.detail = ''
+        self.createdAt = None
+        self.updatedAt = None
+
+
+class BjData:
+
+    def __init__(self):
+        self.id = -1
+        self.title = ''
+        self.postDate = None
+        self.thumbnails = ''
+        self.thumbnailsCount = 0
+        self.downloadLink = ''
+        self.url = ''
+        self.postedIn = ''
+        self.isDownloads = 0
+        self.isSelection = 0
+        self.createdAt = None
+        self.updatedAt = None
+
+    def print(self):
+        print('【' + self.title + '】')
+        print('  post_data     [' + str(self.postDate) + ']')
+        print('  th count      [' + str(self.thumbnailsCount) + '] ' + self.thumbnails)
+        print('  download_link [' + self.downloadLink + ']')
+        print('  posted_in     [' + self.postedIn + ']')
+        print('  url           [' + self.url + ']')
+        print(' ')
+
+
 class MakerData:
 
     def __init__(self):

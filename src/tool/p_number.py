@@ -11,7 +11,7 @@ class ProductNumber:
 
         self.maker_dao = db.maker.MakerDao()
         self.makers = self.maker_dao.get_all()
-        self.fc2 = site.Fc2()
+        self.fc2 = site.fc2.Fc2()
 
         self.filter_makers = list(filter(lambda maker:
                                          len(maker.matchProductNumber.strip()) > 0

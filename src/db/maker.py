@@ -37,7 +37,7 @@ class MakerDao(mysql_base.MysqlBase):
 
         makers = []
         for row in rs:
-            maker = data.MovieMakerData()
+            maker = data.MakerData()
             maker.id = row[0]
             maker.name = row[1]
             maker.matchName = row[2]

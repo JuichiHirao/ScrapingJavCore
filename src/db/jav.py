@@ -110,3 +110,14 @@ class JavDao(mysql_base.MysqlBase):
         print("jav update id [" + str(javData.id) + "] checked_ok")
 
         self.conn.commit()
+
+    def update_package(self, id, package_filename):
+
+        sql = 'UPDATE jav ' \
+                '  SET package = %s ' \
+                '  WHERE id = %s'
+
+        self.cursor.execute(sql, (package_filename, id))
+        print("jav update id [" + str(id) + "]")
+
+        self.conn.commit()
