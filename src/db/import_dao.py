@@ -4,6 +4,17 @@ from .. import data
 
 class ImportDao(mysql_base.MysqlBase):
 
+    def update_p_number_info(self, id, product_number, match_maker):
+
+        sql = 'UPDATE import ' \
+              '  SET kind = %s ' \
+              '   , match_product = %s ' \
+              '   , product_number = %s ' \
+              '   , maker = %s ' \
+              '  WHERE id = %s '
+
+        self.cursor.execute(sql, (match_maker.kind, match_maker.matchProductNumber, product_number, match_maker.get_maker(''), id))
+
     def export_import(self, importData: data.ImportData):
 
         sql = 'INSERT INTO import(copy_text, jav_post_date ' \

@@ -54,3 +54,43 @@ class MakerDao(mysql_base.MysqlBase):
             makers.append(maker)
 
         return makers
+
+    def is_exist(self, match_str: str) -> bool:
+
+        if match_str is None or len(match_str) <= 0:
+            return False
+
+        sql = 'SELECT id  FROM maker WHERE match_str = %s and deleted = 0 '
+
+        self.cursor.execute(sql, (match_str, ))
+
+        rs = self.cursor.fetchall()
+        exist = False
+
+        if rs is not None:
+            for row in rs:
+                exist = True
+                break
+
+        return exist
+
+    def export(self, maker: data.MakerData):
+
+        sql = 'INSERT INTO maker ( ' \
+              '  name, match_name, label, kind ' \
+              '  , match_str, match_product_number, site_kind, replace_words ' \
+              '  , p_number_gen, registered_by ' \
+              '  ) ' \
+              '  VALUES ( ' \
+              '  %s, %s, %s, %s ' \
+              '  , %s, %s, %s, %s ' \
+              '  , %s, %s ' \
+              '  ) '
+
+        self.cursor.execute(sql, (maker.name, maker.matchName, maker.label, maker.kind
+                                  , maker.matchStr, maker.matchProductNumber, maker.siteKind, maker.replaceWords
+                                  , maker.pNumberGen, maker.registeredBy
+                                  ))
+
+        self.conn.commit()
+
