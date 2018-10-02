@@ -69,13 +69,33 @@ class BjDao(mysql_base.MysqlBase):
 
         return bjs
 
+    def is_exist(self, title: str) -> bool:
+
+        if title is None or len(title) <= 0:
+            return False
+
+        sql = 'SELECT title ' \
+              '  FROM bj WHERE title = %s '
+
+        self.cursor.execute(sql, (title, ))
+
+        rs = self.cursor.fetchall()
+        exist = False
+
+        if rs is not None:
+            for row in rs:
+                exist = True
+                break
+
+        return exist
+
     def update_is_download(self, id, is_downloads):
 
         sql = 'UPDATE bj ' \
               '  SET is_downloads = %s ' \
               '  WHERE id = %s'
 
-        self.cursor.execute(sql, (id, is_downloads))
+        self.cursor.execute(sql, (is_downloads, id))
         print("bj update id [" + str(id) + "] is_downloads")
 
         self.conn.commit()
@@ -114,3 +134,17 @@ class BjDao(mysql_base.MysqlBase):
                                   , import_data.size))
 
         self.conn.commit()
+
+    def export(self, bj_data):
+
+        sql = 'INSERT INTO bj(title, post_date ' \
+                ', thumbnails, thumbnails_count, download_link, url, posted_in) ' \
+                ' VALUES(%s, %s, %s, %s, %s, %s, %s)'
+
+        self.cursor.execute(sql, (bj_data.title, bj_data.postDate
+                            , bj_data.thumbnails, bj_data.thumbnailsCount
+                            , bj_data.downloadLink, bj_data.url
+                            , bj_data.postedIn))
+
+        self.conn.commit()
+

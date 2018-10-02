@@ -62,3 +62,41 @@ class Jav2Dao(mysql_base.MysqlBase):
             javs.append(jav)
 
         return javs
+
+    def is_exist(self, title: str = '', kind: str = '') -> bool:
+
+        if title is None or len(title) <= 0:
+            return False
+
+        if kind is None or len(kind) <= 0:
+            sql = 'SELECT title ' \
+                  '  FROM jav2 WHERE title = %s '
+
+            self.cursor.execute(sql, (title, ))
+        else:
+            sql = 'SELECT title ' \
+                  '  FROM jav2 WHERE title = %s and kind = %s '
+
+            self.cursor.execute(sql, (title, kind, ))
+
+        rs = self.cursor.fetchall()
+        exist = False
+
+        if rs is not None:
+            for row in rs:
+                exist = True
+                break
+
+        return exist
+
+    def export(self, jav2_data: data.Jav2Data):
+
+        sql = 'INSERT INTO jav2 (title, download_links, kind, url, detail)' \
+                ' VALUES(%s, %s, %s, %s, %s)'
+
+        self.cursor.execute(sql, (jav2_data.title, jav2_data.downloadLinks, jav2_data.kind, jav2_data.url, jav2_data.detail))
+
+        self.conn.commit()
+
+        return
+

@@ -1,5 +1,6 @@
 from . import mysql_base
 from .. import data
+from datetime import datetime
 
 
 class JavDao(mysql_base.MysqlBase):
@@ -77,6 +78,39 @@ class JavDao(mysql_base.MysqlBase):
 
         return javs
 
+    def is_exist(self, title: str) -> bool:
+
+        if title is None or len(title) <= 0:
+            return False
+
+        sql = 'SELECT title ' \
+              '  FROM jav WHERE title = %s '
+
+        self.cursor.execute(sql, (title, ))
+
+        rs = self.cursor.fetchall()
+        exist = False
+
+        if rs is not None:
+            for row in rs:
+                exist = True
+                break
+
+        return exist
+
+    def update_collect_info(self, jav_data: data.JavData):
+
+        sql = 'UPDATE jav ' \
+              '  SET package = %s ' \
+              '    , thumbnail = %s ' \
+              '    , download_links = %s ' \
+              '  WHERE id = %s'
+
+        self.cursor.execute(sql, (jav_data.package, jav_data.thumbnail, jav_data.downloadLinks, jav_data.id))
+        print("jav update id [" + str(id) + "] collect_info")
+
+        self.conn.commit()
+
     def update_is_selection(self, id, is_selection):
 
         sql = 'UPDATE jav ' \
@@ -119,5 +153,34 @@ class JavDao(mysql_base.MysqlBase):
 
         self.cursor.execute(sql, (package_filename, id))
         print("jav update id [" + str(id) + "]")
+
+        self.conn.commit()
+
+    def update_site_info(self, label, sell_date, id):
+
+        sql = 'UPDATE jav ' \
+              '  SET label = %s, sell_date = %s, is_site = 1 ' \
+              '  WHERE id = %s'
+
+        self.cursor.execute(sql, (label, sell_date, id))
+        print("jav update id [" + str(id) + "] site_info")
+
+        self.conn.commit()
+
+    def export(self, jav_data: data.JavData):
+
+        sql = 'INSERT INTO jav (title, post_date ' \
+                '  , sell_date, actress, maker, label' \
+                '  , url, product_number, makers_id, is_parse2 ' \
+                '  ) ' \
+                ' VALUES(%s, %s' \
+                '  , %s, %s, %s, %s' \
+                '  , %s, %s, %s, %s' \
+                ' )'
+
+        self.cursor.execute(sql, (jav_data.title, jav_data.postDate
+                            , jav_data.sellDate, jav_data.actress, jav_data.maker, jav_data.label
+                            , jav_data.url, jav_data.productNumber, jav_data.makersId, jav_data.isParse2
+                            ))
 
         self.conn.commit()
