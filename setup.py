@@ -126,7 +126,7 @@ setup(
     #
     # packages=find_packages(exclude=['contrib', 'docs', 'tests']),  # Required
     package_dir={'javcore': 'src'},
-    packages=['javcore', 'javcore.data', 'javcore.db', 'javcore.tool', 'javcore.site'],  # Required
+    packages=['javcore', 'javcore.data', 'javcore.db', 'javcore.tool', 'javcore.site', 'javcore.common'],  # Required
     # packages=['javcore', 'javcore.mysql_base'],  # Required
     # packages=['javcore', 'javcore.mysql_base', 'javcore.mysql_base.jav_dao'],  # Required
 
