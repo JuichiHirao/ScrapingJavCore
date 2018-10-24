@@ -184,7 +184,7 @@ class ProductNumber:
             if match:
                 p_number = match.group().strip()
                 p_maker = p_number.split('-')[0]
-                find_filter_maker = filter(lambda maker: maker.matchStr == p_maker, self.makers)
+                find_filter_maker = filter(lambda maker: maker.matchStr.upper() == p_maker.upper(), self.makers)
                 find_list_maker = list(find_filter_maker)
                 if len(find_list_maker) == 1:
                     match_maker = find_list_maker[0]
