@@ -150,6 +150,9 @@ class ImportData:
         self.hd_kind = 0
         self.isSplit = False
         self.isNameOnly = False
+        self.package = ''
+        self.thumbnail = ''
+        self.detail = ''
         self.url = ''
         self.postDate = None
         self.rating = 0
