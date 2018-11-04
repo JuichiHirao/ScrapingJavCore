@@ -152,6 +152,7 @@ class ImportData:
         self.isNameOnly = False
         self.package = ''
         self.thumbnail = ''
+        self.downloadFiles = ''
         self.detail = ''
         self.url = ''
         self.postDate = None

@@ -22,20 +22,20 @@ class ImportDao(mysql_base.MysqlBase):
                 ', maker, title, actresses, rar_flag ' \
                 ', tag, filename, hd_kind, movie_file_id' \
                 ', split_flag, name_only_flag, package, thumbnail ' \
-                ', jav_url, rating, size) ' \
+                ', download_files, jav_url, rating, size) ' \
                 ' VALUES(%s, %s' \
                 ', %s, %s, %s, %s' \
                 ', %s, %s, %s, %s' \
                 ', %s, %s, %s, %s' \
                 ', %s, %s, %s, %s' \
-                ', %s, %s, %s)'
+                ', %s, %s, %s, %s)'
 
         self.cursor.execute(sql, (importData.copy_text, importData.postDate
                             , importData.kind, importData.matchStr, importData.productNumber, importData.sellDate
                             , importData.maker, importData.title, importData.actress, importData.isRar
                             , importData.tag, importData.filename, importData.hd_kind, 0
                             , importData.isSplit, importData.isNameOnly, importData.package, importData.thumbnail
-                            , importData.url, importData.rating, importData.size))
+                            , importData.downloadFiles, importData.url, importData.rating, importData.size))
 
         self.conn.commit()
 
