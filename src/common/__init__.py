@@ -23,12 +23,11 @@ class CopyText:
 
         match_search = re.search('[\[]*FHD[\]]*', copy_text)
         if match_search:
-            title = copy_text.replace(match_search.group(), '').replace(product_number.upper(), '', ) \
-                .replace(product_number.lower(), '', )
             movie_kind = ' FHD'
-        else:
-            # print('p_num [', str(product_number) + ']')
-            title = copy_text.replace(product_number, '').strip()
+            copy_text = copy_text.replace(match_search.group(), '')
+
+        re_replace = re.compile(product_number, re.IGNORECASE)
+        title = re.sub(re_replace, '', copy_text.strip())
 
         if len(movie_kind) > 0:
             title = title.strip() + movie_kind
