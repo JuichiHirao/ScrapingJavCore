@@ -3,6 +3,7 @@ from javcore import common
 from javcore import data
 
 
+# PYTHONPATH=. python test/test_common.py -v
 class TestCopyText(unittest.TestCase):
 
     def test_scute(self):
@@ -52,8 +53,18 @@ class TestCopyText(unittest.TestCase):
                                      , 'OKAX-420', match_maker)
         self.assertEqual(expected, actual)
 
+    def test_hankaku_slash(self):
+        match_maker = data.MakerData()
+        match_maker.matchName = '300MIUM'
+        match_maker.matchStr = ''
+        match_maker.matchProductNumber = ''
+        match_maker.replaceWords = ''
+        expected = '働くドMさん. Case.2 健康食品メーカー経理／加藤さん／23歳 早口で捲し立てるも断りきれないド真面目OL！！'
+        copy_text = common.CopyText()
+        actual = copy_text.get_title('300MIUM-329 働くドMさん. Case.2 健康食品メーカー経理/加藤さん/23歳 早口で捲し立てるも断りきれないド真面目OL！！'
+                                     , '300MIUM-329', match_maker)
+        self.assertEqual(expected, actual)
+
 
 if __name__ == "__main__":
     unittest.main()
-    # test = TestCase()
-    # test.main()

@@ -9,6 +9,8 @@ class CopyText:
 
     def get_title(self, copy_text: str = '', product_number: str = '', match_maker: data.MakerData = None):
 
+        hankaku_kigou = ['/', ':']
+        zenkaku_kigou = ['／', '：']
         hankaku = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ' ']
         zenkaku = ['１', '２', '３', '４', '５', '６', '７', '８', '９', '０', '　']
         movie_kind = ''
@@ -46,6 +48,11 @@ class CopyText:
             m = re.search(char, edit_copytext)
             if m:
                 edit_copytext = edit_copytext.replace(char, hankaku[idx])
+
+        for idx, char in enumerate(hankaku_kigou):
+            m = re.search(char, edit_copytext)
+            if m:
+                edit_copytext = edit_copytext.replace(char, zenkaku_kigou[idx])
 
         title = edit_copytext
 
