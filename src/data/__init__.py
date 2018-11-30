@@ -22,6 +22,7 @@ class JavData:
         self.makersId = 0
         self.rating = 0
         self.isSite = 0
+        self.searchResult = ''
         self.createdAt = None
         self.updatedAt = None
 
@@ -148,13 +149,16 @@ class ImportData:
         self.tag = False
         self.filename = ''
         self.hd_kind = 0
+        self.movieFileId = 0
         self.isSplit = False
         self.isNameOnly = False
         self.package = ''
         self.thumbnail = ''
         self.downloadFiles = ''
+        self.searchResult = ''
         self.detail = ''
         self.url = ''
         self.postDate = None
         self.rating = 0
+        self.size = 0
 
