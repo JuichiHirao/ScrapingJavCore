@@ -1,6 +1,5 @@
 from . import mysql_base
 from .. import data
-from datetime import datetime
 
 
 class JavDao(mysql_base.MysqlBase):
@@ -43,7 +42,7 @@ class JavDao(mysql_base.MysqlBase):
               '  , sell_date, actress, maker, label ' \
               '  , download_links, download_files, url, is_selection ' \
               '  , product_number, rating, is_site, is_parse2 ' \
-              '  , makers_id ' \
+              '  , makers_id, search_result ' \
               '  , created_at, updated_at ' \
               '  FROM jav '
 
@@ -72,8 +71,9 @@ class JavDao(mysql_base.MysqlBase):
             jav.isSite = row[15]
             jav.isParse2 = row[16]
             jav.makersId = row[17]
-            jav.createdAt = row[18]
-            jav.updatedAt = row[19]
+            jav.searchResult = row[18]
+            jav.createdAt = row[19]
+            jav.updatedAt = row[20]
             javs.append(jav)
 
         return javs
@@ -164,6 +164,17 @@ class JavDao(mysql_base.MysqlBase):
 
         self.cursor.execute(sql, (label, sell_date, id))
         print("jav update id [" + str(id) + "] site_info")
+
+        self.conn.commit()
+
+    def update_search_result(self, search_result: str = '', id: int = 0):
+
+        sql = 'UPDATE jav ' \
+              '  SET search_result = %s ' \
+              '  WHERE id = %s'
+
+        self.cursor.execute(sql, (search_result, id))
+        print("jav update id [" + str(id) + "] search_result")
 
         self.conn.commit()
 
