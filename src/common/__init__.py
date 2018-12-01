@@ -38,6 +38,9 @@ class Environment:
     def get_driver(self):
         return self.driver
 
+    def get_image_path(self):
+        return self.imagePath
+
     def __set_windows(self):
 
         driver_path = 'c:\\SHARE\\chromedriver.exe'
