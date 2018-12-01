@@ -1,8 +1,7 @@
 import urllib.request
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
 from time import sleep
 from bs4 import BeautifulSoup
+from javcore import common
 
 
 class Fc2:
@@ -12,11 +11,11 @@ class Fc2:
         self.opener = urllib.request.build_opener()
         self.opener.addheaders = [('User-Agent','Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1941.0 Safari/537.36')]
 
-        self.options = Options()
-        self.options.add_argument('--headless')
+        self.env = common.Environment()
 
     def __get_info_from_chrome(self, product_number):
-        self.driver = webdriver.Chrome(chrome_options=self.options, executable_path='c:\\SHARE\\chromedriver.exe')
+
+        self.driver = self.env.get_driver()
 
         # print(self.main_url + product_number)
         self.driver.get(self.main_url + product_number)
@@ -56,10 +55,10 @@ class Fc2:
         return seller, sell_date
 
     def __get_info(self, product_number):
+
         url = self.main_url + product_number
-        sell_date = ''
-        seller = ''
         urllib.request.install_opener(self.opener)
+
         with urllib.request.urlopen(url) as response:
             html = response.read()
             html_soup = BeautifulSoup(html, "html.parser")
@@ -82,3 +81,16 @@ class Fc2:
             # return self.__get_info(product_number)
             return '', ''
             # return self.__get_info_from_chrome(product_number)
+
+
+if __name__ == '__main__':
+
+    # 正常
+    fc2 = Fc2()
+    seller, sell_date = fc2.get_info('872051')
+    print(seller + ' [' + str(sell_date) + ']')
+
+    # 該当無し
+    fc2 = Fc2()
+    seller, sell_date = fc2.get_info('8720511')
+    print(seller + ' [' + str(sell_date) + ']')

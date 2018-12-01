@@ -1,5 +1,73 @@
 import re
+import os
+import sys
 from .. import data
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+
+
+class ImagePathNotFoundError(Exception):
+    pass
+
+
+class DriverNotFoundError(Exception):
+    pass
+
+
+class Environment:
+
+    def __init__(self):
+
+        self.options = Options()
+        self.options.add_argument('--headless')
+
+        self.driver = None
+        self.imagePath = ''
+
+        if os.name == 'nt':
+            self.__set_windows()
+        elif os.name == 'posix' and 'linux' in sys.platform:
+            print('linux')
+            self.__set_linux()
+        elif os.name == 'posix':
+            print('macos')
+            self.__set_macos()
+        else:
+            print('other os.name' + os.name + '] sys.platform [' + sys.platform + ']')
+
+    def get_driver(self):
+        return self.driver
+
+    def __set_windows(self):
+
+        driver_path = 'c:\\SHARE\\chromedriver.exe'
+
+        if not os.path.isfile(driver_path):
+            raise DriverNotFoundError(driver_path + 'に存在しません')
+
+        self.driver = webdriver.Chrome(chrome_options=self.options,
+                                       executable_path='c:\\SHARE\\chromedriver.exe')
+
+        self.imagePath = "D:\DATA\jav-save"
+
+        if not os.path.isdir(self.imagePath):
+            raise ImagePathNotFoundError(self.imagePath + 'に存在しません')
+
+    def __set_macos(self):
+
+        self.driver = webdriver.Chrome(chrome_options=self.options)
+
+        self.imagePath = "/Users/juichihirao/jav-jpeg"
+        if not os.path.exists(self.imagePath):
+            raise ImagePathNotFoundError(self.imagePath + 'に存在しません')
+
+    def __set_linux(self):
+
+        self.driver = webdriver.Chrome(chrome_options=self.options)
+
+        self.imagePath = "~root/jav-jpeg"
+        if not os.path.exists(self.imagePath):
+            raise ImagePathNotFoundError(self.imagePath + 'に存在しません')
 
 
 class CopyText:
