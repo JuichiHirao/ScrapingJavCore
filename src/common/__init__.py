@@ -86,13 +86,6 @@ class CopyText:
         zenkaku = ['１', '２', '３', '４', '５', '６', '７', '８', '９', '０', '　']
         movie_kind = ''
 
-        if match_maker:
-            if match_maker.replaceWords is not None and len(match_maker.replaceWords) > 0:
-                words = match_maker.replaceWords.split(' ')
-                for word in words:
-                    copy_text = re.sub(word, '', copy_text)
-
-        # re_movie = re.compile(self.movie_extension, re.IGNORECASE)
 
         match_search = re.search('[\[]*FHD[\]]*', copy_text)
         if match_search:
@@ -124,6 +117,37 @@ class CopyText:
             m = re.search(char, edit_copytext)
             if m:
                 edit_copytext = edit_copytext.replace(char, zenkaku_kigou[idx])
+
+        if match_maker:
+            if match_maker.replaceWords is not None and len(match_maker.replaceWords) > 0:
+                words = match_maker.replaceWords.split('¥t')
+                for word in words:
+                    if '/' in word:
+                        # print('/【' + word[1:-1] + '】')
+                        replace_before_after = word[1:-1].split('/')
+                        # print('/0【' + replace_before_after[0] + '】')
+                        # print('/1【' + replace_before_after[1] + '】')
+                        m = re.search(replace_before_after[0], edit_copytext)
+                        replace_after = replace_before_after[1]
+                        if m:
+                            m_rename = re.search(re.escape('(?P<') + '[a-zA-Z]*' + re.escape('>')
+                                                 , replace_before_after[0])
+                            # m_rename = re.search(re.escape('(?P<age>'), replace_before_after[0])
+                            if m_rename:
+                                re_name = m_rename.group()[4:-1]
+                                replace_after = replace_before_after[1].replace(re_name, m.group(re_name))
+                                if self.is_debug:
+                                    print('re_name [' + re_name + ']' + m.group(re_name)
+                                          + '  replace_after 【' + replace_after + '】')
+                            else:
+                                if self.is_debug:
+                                    print('no match ' + m.group('age'))
+                        edit_copytext = re.sub(replace_before_after[0], replace_after, edit_copytext)
+                    else:
+                        if self.is_debug:
+                            print(' ' + word)
+                        edit_copytext = re.sub(word, '', edit_copytext)
+                    # print(word + ' [' + copy_text + ']')
 
         title = edit_copytext
 

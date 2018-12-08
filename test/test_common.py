@@ -65,6 +65,20 @@ class TestCopyText(unittest.TestCase):
                                      , '300MIUM-329', match_maker)
         self.assertEqual(expected, actual)
 
+    def test_h0930(self):
+        match_maker = data.MakerData()
+        match_maker.name = 'エッチなオクサマ H0930'
+        match_maker.matchName = 'エッチなオクサマ H0930'
+        match_maker.matchStr = 'H0930|エッチな0930'
+        match_maker.matchProductNumber = 'ori[0-9][0-9][0-9][0-9]|pla[0-9]{4}|gol[0-9]{3}|ki[1-2][5-9][0-9]{4}'
+        # match_maker.replaceWords = 'エッチな0930¥t[a-zA-Z ]*¥t/[0-9]{2}[歳才]/ /'
+        match_maker.replaceWords = 'エッチな0930¥t[a-zA-Z ]*¥t/(?P<age>[0-9]{2}[歳才])/ age/'
+        expected = '藤本かおり 31歳'
+        copy_text = common.CopyText()
+        actual = copy_text.get_title('H0930 ki181021 エッチな0930 藤本 かおり Kaori Fu jimoto 31歳'
+                                     , 'ki181021', match_maker)
+        self.assertEqual(expected, actual)
+
 
 if __name__ == "__main__":
     unittest.main()
