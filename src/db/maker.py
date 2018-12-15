@@ -19,7 +19,25 @@ class MakerDao(mysql_base.MysqlBase):
 
         return makers
 
-    def __get_sql_select(self):
+    def get_where_agreement(self, where: str = '', param_list: list = None):
+
+        sql = self.__get_sql_select(where)
+
+        if param_list:
+            self.cursor.execute(sql, param_list)
+        else:
+            self.cursor.execute(sql)
+
+        rs = self.cursor.fetchall()
+
+        makers = self.__get_list(rs)
+
+        if makers is None or len(makers) <= 0:
+            return None
+
+        return makers
+
+    def __get_sql_select(self, where: str = ''):
 
         sql = 'SELECT id ' \
               '  , name, match_name, label, kind ' \
@@ -27,9 +45,12 @@ class MakerDao(mysql_base.MysqlBase):
               '  , p_number_gen, registered_by ' \
               '  , created_at, updated_at ' \
               '  , created_at, updated_at ' \
-              '  FROM maker ' \
-              '  WHERE deleted = 0 ' \
-              '  ORDER BY id'
+              '  FROM maker '
+
+        if len(where) > 0:
+            sql = sql + where + ' ORDER BY id '
+        else:
+            sql = sql + 'WHERE deleted = 0 ORDER BY id '
 
         return sql
 
