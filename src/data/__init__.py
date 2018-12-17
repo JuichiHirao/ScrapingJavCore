@@ -162,3 +162,16 @@ class ImportData:
         self.rating = 0
         self.size = 0
 
+
+class ReplaceInfoData:
+
+    def __init__(self):
+
+        self.id = -1
+        self.type = ''
+        self.source = ''
+        self.destination = ''
+        self.sourceType = ''
+        self.createdAt = None
+        self.updatedAt = None
+

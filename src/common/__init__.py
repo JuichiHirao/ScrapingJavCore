@@ -2,6 +2,7 @@ import re
 import os
 import sys
 from .. import data
+from .. import db
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
@@ -156,3 +157,26 @@ class CopyText:
             print('  after  [' + title.strip() + ']')
 
         return title.strip()
+
+
+class ImportParser:
+
+    def __init__(self):
+        self.replace_info_dao = db.replace_info.ReplaceInfoDao()
+        self.replace_info_list = self.replace_info_dao.get_all()
+
+    def get_actress(self, jav: data.JavData()):
+
+        actress = ''
+        for replace_info in self.replace_info_list:
+            if replace_info.sourceType == 'text':
+                if len(actress) <= 0:
+                    actress = jav.actress.replace(replace_info.source, replace_info.destination)
+                else:
+                    actress = actress.replace(replace_info.source, replace_info.destination)
+
+        if ' ' in actress:
+            actress_list = actress.split(' ')
+            actress = ','.join(actress_list)
+
+        return actress
