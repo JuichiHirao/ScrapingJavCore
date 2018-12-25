@@ -220,9 +220,10 @@ class AutoMakerParser:
 
         if len(match_str) > 0:
             exist_maker = self.maker_dao.get_exist(match_str.upper())
-            err_msg = '[' + str(jav.id) + '] 発見!! [' + match_str + ']'
-            exist_maker.print()
-            raise MatchStrSameError(err_msg)
+            if exist_maker:
+                err_msg = '[' + str(jav.id) + '] 発見!! [' + match_str + ']'
+                exist_maker.print()
+                raise MatchStrSameError(err_msg)
 
         maker = data.MakerData()
         maker.name = jav.maker

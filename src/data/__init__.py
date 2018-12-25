@@ -131,7 +131,7 @@ class MakerData:
         print('  matchStr [' + self.matchStr + ']')
         print('  matchPNum[' + self.matchProductNumber + ']')
         print('  siteKind [' + str(self.siteKind) + ']')
-        print('  reWords  [' + self.replaceWords + ']')
+        print('  reWords  [' + str(self.replaceWords) + ']')
         print('  pNumGen  [' + str(self.pNumberGen) + ']')
         print('  regBy    [' + str(self.registeredBy) + ']')
         print('  created  [' + str(self.createdAt) + ']')
