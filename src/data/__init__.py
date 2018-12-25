@@ -23,6 +23,7 @@ class JavData:
         self.rating = 0
         self.isSite = 0
         self.searchResult = ''
+        self.detail = ''
         self.createdAt = None
         self.updatedAt = None
 

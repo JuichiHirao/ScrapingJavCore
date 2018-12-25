@@ -42,7 +42,7 @@ class JavDao(mysql_base.MysqlBase):
               '  , sell_date, actress, maker, label ' \
               '  , download_links, download_files, url, is_selection ' \
               '  , product_number, rating, is_site, is_parse2 ' \
-              '  , makers_id, search_result ' \
+              '  , makers_id, search_result, detail ' \
               '  , created_at, updated_at ' \
               '  FROM jav '
 
@@ -72,8 +72,9 @@ class JavDao(mysql_base.MysqlBase):
             jav.isParse2 = row[16]
             jav.makersId = row[17]
             jav.searchResult = row[18]
-            jav.createdAt = row[19]
-            jav.updatedAt = row[20]
+            jav.detail = row[19]
+            jav.createdAt = row[20]
+            jav.updatedAt = row[21]
             javs.append(jav)
 
         return javs
@@ -175,6 +176,18 @@ class JavDao(mysql_base.MysqlBase):
 
         self.cursor.execute(sql, (search_result, id))
         print("jav update id [" + str(id) + "] search_result")
+
+        self.conn.commit()
+
+    def update_detail_and_sell_date(self, detail: str = '', sell_date: str = '', id: int = 0):
+
+        sql = 'UPDATE jav ' \
+              '  SET detail = %s ' \
+              '    , sell_date = %s ' \
+              '  WHERE id = %s'
+
+        self.cursor.execute(sql, (detail, sell_date, id))
+        print("jav update id [" + str(id) + "] detail, sell_date")
 
         self.conn.commit()
 

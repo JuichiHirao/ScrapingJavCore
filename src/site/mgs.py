@@ -1,7 +1,8 @@
 import re
 import urllib.request
-from javcore import common
 from selenium.common import exceptions
+from .. import common
+from .. import db
 
 
 class Mgs:
@@ -14,6 +15,7 @@ class Mgs:
 
         self.env = common.Environment()
         self.driver = self.env.get_driver()
+        self.import_dao = db.import_dao.ImportDao()
 
     def __get_info_from_chrome(self, product_number):
 
@@ -75,10 +77,23 @@ class Mgs:
 
         return self.__get_info_from_chrome(product_number)
 
+    def test_execute(self):
+
+        imports = self.import_dao.get_all()
+        if len(imports) > 0:
+            for one_data in imports:
+                detail, sell_date = self.get_info(one_data.productNumber)
+                if len(sell_date) > 0:
+                    print(one_data.copy_text)
+                    print(detail)
+                    print('')
+                    self.import_dao.update_detail_and_sell_date(detail, sell_date, one_data.id)
+
 
 if __name__ == '__main__':
 
     mgs = Mgs()
-    detail, sell_date = mgs.get_info('277DCV-093')
+    # detail, sell_date = mgs.get_info('277DCV-093')
+    detail, sell_date = mgs.test_execute()
     # print(' [' + str(sell_date) + '] ' + detail)
 
