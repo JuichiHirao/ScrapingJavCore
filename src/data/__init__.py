@@ -126,11 +126,16 @@ class MakerData:
 
     def print(self):
         print('【' + self.name + ':' + self.label + '】')
-        print('  kind    [' + str(self.kind) + ']')
-        print('  match   [' + self.matchStr + ']')
-        print('  match_p [' + self.matchProductNumber + ']')
-        print('  created [' + str(self.createdAt) + ']')
-        print('  updated [' + str(self.updatedAt) + ']')
+        print('  kind     [' + str(self.kind) + ']')
+        print('  matchNam [' + self.matchName + ']')
+        print('  matchStr [' + self.matchStr + ']')
+        print('  matchPNum[' + self.matchProductNumber + ']')
+        print('  siteKind [' + str(self.siteKind) + ']')
+        print('  reWords  [' + self.replaceWords + ']')
+        print('  pNumGen  [' + str(self.pNumberGen) + ']')
+        print('  regBy    [' + str(self.registeredBy) + ']')
+        print('  created  [' + str(self.createdAt) + ']')
+        print('  updated  [' + str(self.updatedAt) + ']')
         print(' ')
 
 

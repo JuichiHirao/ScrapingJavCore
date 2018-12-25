@@ -76,6 +76,15 @@ class MakerDao(mysql_base.MysqlBase):
 
         return makers
 
+    def get_exist(self, match_str: str = ''):
+
+        makers = self.get_where_agreement('WHERE match_str = %s and deleted = 0', (match_str, ))
+
+        if makers is None or len(makers) <= 0:
+            return None
+
+        return makers[0]
+
     def is_exist(self, match_str: str) -> bool:
 
         if match_str is None or len(match_str) <= 0:

@@ -1,6 +1,7 @@
 import re
 import os
 import sys
+from datetime import datetime
 from .. import data
 from .. import db
 from selenium import webdriver
@@ -180,3 +181,68 @@ class ImportParser:
             actress = ','.join(actress_list)
 
         return actress
+
+
+class MatchStrNotFoundError(Exception):
+    pass
+
+
+class MatchStrSameError(Exception):
+    pass
+
+
+class AutoMakerParser:
+
+    def __init__(self, maker_dao: db.maker.MakerDao = None):
+        self.replace_info_dao = db.replace_info.ReplaceInfoDao()
+        self.replace_info_list = self.replace_info_dao.get_where_agreement('WHERE type like \'maker%\'')
+
+        if not maker_dao:
+            self.maker_dao = db.maker.MakerDao()
+        else:
+            self.maker_dao = maker_dao
+
+        # INSERT INTO replace_info (type, source, destination) VALUES('maker_name', 'プレステージ', 'PreStige');
+        # INSERT INTO replace_info (type, source, destination) VALUES('maker_m_name', 'プレステージ', 'プレステージ');
+
+    def get_maker(self, jav: data.JavData()):
+
+        m_p = re.search('[A-Z0-9]{2,5}-[A-Z0-9]{2,4}', jav.title, re.IGNORECASE)
+
+        if m_p:
+            p_number = m_p.group()
+            match_str = p_number.split('-')[0]
+        else:
+            err_msg = '[' + str(jav.id) \
+                      + '] 対象のmatch_strが存在しません [A-Z0-9]{3,5}-[A-Z0-9]{3,4}の正規表現と一致しません' \
+                      + jav.title
+            raise MatchStrNotFoundError(err_msg)
+
+        if len(match_str) > 0:
+            exist_maker = self.maker_dao.get_exist(match_str.upper())
+            err_msg = '[' + str(jav.id) + '] 発見!! [' + match_str + ']'
+            exist_maker.print()
+            raise MatchStrSameError(err_msg)
+
+        maker = data.MakerData()
+        maker.name = jav.maker
+        maker.kind = 1
+        maker.matchStr = match_str.upper()
+        maker.label = jav.label
+        maker.registeredBy = 'AUTO ' + datetime.now().strftime('%Y-%m-%d')
+
+        for replace_info in self.replace_info_list:
+            if replace_info.type == 'maker_name':
+                maker.name = self.__get_type_replace(jav.maker, replace_info)
+            if replace_info.type == 'maker_m_name':
+                maker.matchName = self.__get_type_replace(jav.maker.replace('/', '[/／]'), replace_info)
+
+        return maker
+
+    def __get_type_replace(self, target_str: str = '', replace_info: data.ReplaceInfoData = None):
+
+        if replace_info.sourceType == 'text':
+            return target_str.replace(replace_info.source, replace_info.destination)
+
+        return ''
+
