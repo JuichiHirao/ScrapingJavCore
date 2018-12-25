@@ -23,6 +23,7 @@ class JavData:
         self.rating = 0
         self.isSite = 0
         self.searchResult = ''
+        self.detail = ''
         self.createdAt = None
         self.updatedAt = None
 
@@ -161,4 +162,17 @@ class ImportData:
         self.postDate = None
         self.rating = 0
         self.size = 0
+
+
+class ReplaceInfoData:
+
+    def __init__(self):
+
+        self.id = -1
+        self.type = ''
+        self.source = ''
+        self.destination = ''
+        self.sourceType = ''
+        self.createdAt = None
+        self.updatedAt = None
 

@@ -95,14 +95,14 @@ class ImportDao(mysql_base.MysqlBase):
                 ', tag, filename, hd_kind, movie_file_id' \
                 ', split_flag, name_only_flag, package, thumbnail ' \
                 ', download_files, jav_url, rating, size' \
-                ', search_result) ' \
+                ', search_result, detail) ' \
                 ' VALUES(%s, %s' \
                 ', %s, %s, %s, %s' \
                 ', %s, %s, %s, %s' \
                 ', %s, %s, %s, %s' \
                 ', %s, %s, %s, %s' \
                 ', %s, %s, %s, %s' \
-                ', %s)'
+                ', %s, %s)'
 
         self.cursor.execute(sql, (import_data.copy_text, import_data.postDate
                             , import_data.kind, import_data.matchStr, import_data.productNumber, import_data.sellDate
@@ -110,7 +110,7 @@ class ImportDao(mysql_base.MysqlBase):
                             , import_data.tag, import_data.filename, import_data.hd_kind, 0
                             , import_data.isSplit, import_data.isNameOnly, import_data.package, import_data.thumbnail
                             , import_data.downloadFiles, import_data.url, import_data.rating, import_data.size
-                            , import_data.searchResult))
+                            , import_data.searchResult, import_data.detail))
 
         self.conn.commit()
 
@@ -124,6 +124,18 @@ class ImportDao(mysql_base.MysqlBase):
 
         self.cursor.execute(sql, (search_result, id))
         print("import update id [" + str(id) + "] search_result")
+
+        self.conn.commit()
+
+    def update_detail_and_sell_date(self, detail: str = '', sell_date: str = '', id: int = 0):
+
+        sql = 'UPDATE import ' \
+              '  SET detail = %s ' \
+              '    , sell_date = %s ' \
+              '  WHERE id = %s'
+
+        self.cursor.execute(sql, (detail, sell_date, id))
+        print("import update id [" + str(id) + "] detail, sell_date")
 
         self.conn.commit()
 

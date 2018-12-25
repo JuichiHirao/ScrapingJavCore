@@ -4,3 +4,4 @@ from . import jav2
 from . import maker
 from . import import_dao
 from . import bj
+from . import replace_info
