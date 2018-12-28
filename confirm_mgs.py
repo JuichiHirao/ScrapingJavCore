@@ -10,11 +10,11 @@ mgs = site.mgs.Mgs()
 # javs = jav_dao.get_where_agreement('WHERE id = 13918') # 326EVA-007
 javs = jav_dao.get_where_agreement('WHERE id = 13917') # 326SPOR-001
 site_data = mgs.get_info(javs[0].productNumber)
-site_data.print()
+site_data.print('        ')
 
 parser = common.AutoMakerParser()
 maker = parser.get_maker_from_site(site_data, 'MGS')
-maker.print()
+maker.print('    ')
 '''
 exist_flag = mgs.exist_product_number('300MIUM-365')
 print('300MIUM-365    ' + str(exist_flag))
