@@ -126,6 +126,7 @@ class MakerData:
 
     def print(self):
         print('【' + self.name + ':' + self.label + '】')
+        print('  id       [' + str(self.id) + ']')
         print('  kind     [' + str(self.kind) + ']')
         print('  matchNam [' + self.matchName + ']')
         print('  matchStr [' + self.matchStr + ']')
@@ -180,4 +181,35 @@ class ReplaceInfoData:
         self.sourceType = ''
         self.createdAt = None
         self.updatedAt = None
+
+
+class SiteData:
+
+    def __init__(self):
+
+        self.name = ''
+        self.title = ''
+        self.actress = ''
+        self.maker = ''
+        self.duration = ''
+        self.productNumber = ''
+        self.streamDate = ''
+        self.sellDate = ''
+        self.series = ''
+        self.label = ''
+
+    def get_detail(self):
+        return self.streamDate + '、' + self.sellDate + '、' + self.actress + '、' + self.title
+
+    def print(self):
+        print('【' + self.name + '】')
+        print('  title      [' + self.title + ']')
+        print('  actress    [' + self.actress + ']')
+        print('  maker      [' + self.maker + ']')
+        print('  duration   [' + self.duration + ']')
+        print('  pNumber    [' + self.productNumber + ']')
+        print('  streamDate [' + self.streamDate + ']')
+        print('  sellDate   [' + self.sellDate + ']')
+        print('  series     [' + self.series + ']')
+        print(' ')
 

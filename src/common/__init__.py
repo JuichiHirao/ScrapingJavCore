@@ -232,13 +232,59 @@ class AutoMakerParser:
         maker.label = jav.label
         maker.registeredBy = 'AUTO ' + datetime.now().strftime('%Y-%m-%d')
 
-        for replace_info in self.replace_info_list:
-            if replace_info.type == 'maker_name':
-                maker.name = self.__get_type_replace(jav.maker, replace_info)
-            if replace_info.type == 'maker_m_name':
-                maker.matchName = self.__get_type_replace(jav.maker.replace('/', '[/／]'), replace_info)
+        maker.name = self.apply_replace_info(jav.maker, ('maker_name', 'maker_m_name'))
+        maker.label = self.apply_replace_info(jav.label, ('maker_label', 'maker_m_label'))
 
         return maker
+
+    def get_maker_from_site(self, site_data: data.SiteData(), site_name: str = ''):
+
+        m_p = re.search('[A-Z0-9]{4,10}-[A-Z0-9]{2,4}', site_data.productNumber, re.IGNORECASE)
+
+        if m_p:
+            p_number = m_p.group()
+            match_str = p_number.split('-')[0]
+        else:
+            err_msg = 'site_data.productNumber[' + str(site_data.productNumber) \
+                      + '] が所定の形式ではありません [A-Z0-9]{4,10}-[A-Z0-9]{3,4}の正規表現と一致しません'
+            raise MatchStrNotFoundError(err_msg)
+
+        maker = data.MakerData()
+
+        if site_name.lower() == 'mgs':
+            if site_data.maker == 'プレステージ':
+                maker.name = site_data.maker
+                maker.matchName = site_data.maker
+                maker.label = site_data.label
+            else:
+                maker.name = site_name
+                maker.matchName = site_name
+                maker.label = site_data.maker
+            maker.siteKind = 2
+        else:
+            maker.name = site_name
+            maker.matchName = site_name
+            maker.label = site_data.maker
+
+        maker.kind = 1
+        maker.matchStr = match_str.upper()
+        maker.registeredBy = 'AUTO ' + datetime.now().strftime('%Y-%m-%d')
+
+        maker.name = self.apply_replace_info(maker.name, ('maker_name', 'maker_m_name'))
+        maker.label = self.apply_replace_info(maker.label, ('maker_label', 'maker_m_label'))
+
+        return maker
+
+    def apply_replace_info(self, target_str: str = '', apply_list: list = None):
+
+        apply_str = ''
+        for replace_info in self.replace_info_list:
+            if apply_list == 'all':
+                apply_str = self.__get_type_replace(target_str, replace_info)
+            if replace_info.type in apply_list:
+                apply_str = self.__get_type_replace(target_str, replace_info)
+
+        return apply_str
 
     def __get_type_replace(self, target_str: str = '', replace_info: data.ReplaceInfoData = None):
 
