@@ -88,7 +88,6 @@ class CopyText:
         zenkaku = ['１', '２', '３', '４', '５', '６', '７', '８', '９', '０', '　']
         movie_kind = ''
 
-
         match_search = re.search('[\[]*FHD[\]]*', copy_text)
         if match_search:
             movie_kind = ' FHD'
@@ -166,7 +165,7 @@ class ImportParser:
         self.replace_info_dao = db.replace_info.ReplaceInfoDao()
         self.replace_info_list = self.replace_info_dao.get_all()
 
-    def get_actress(self, jav: data.JavData()):
+    def get_actress(self, jav: data.JavData() = None):
 
         actress = ''
         for replace_info in self.replace_info_list:
@@ -181,6 +180,34 @@ class ImportParser:
             actress = ','.join(actress_list)
 
         return actress
+
+    def get_filename(self, import_data: data.ImportData() = None):
+
+        if import_data is None:
+            return ''
+
+        # import_data = data.ImportData()
+        kind_str = ''
+        if import_data.kind == 1:
+            kind_str = '[AVRIP]'
+        elif import_data.kind == 2:
+            kind_str = '[IVRIP]'
+        elif import_data.kind == 3:
+            kind_str = '[裏AVRIP]'
+        elif import_data.kind == 4:
+            kind_str = '[DMMR-AVRIP]'
+        elif import_data.kind == 5:
+            kind_str = '[DMMR-IVRIP]'
+
+        try:
+            sell_date_str = import_data.sellDate.strftime('%Y%m%d')
+        except AttributeError:
+            return ''
+
+        filename = kind_str + '【' + import_data.maker.strip() + '】' + import_data.title + ' ' \
+                   + '[' + import_data.productNumber + ' ' + sell_date_str + ']'
+
+        return filename
 
 
 class MatchStrNotFoundError(Exception):
@@ -292,4 +319,3 @@ class AutoMakerParser:
             return target_str.replace(replace_info.source, replace_info.destination)
 
         return ''
-
