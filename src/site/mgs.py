@@ -3,6 +3,7 @@ import urllib.request
 from selenium.common import exceptions
 from .. import common
 from .. import db
+from .. import data
 
 
 class Mgs:
@@ -29,7 +30,7 @@ class Mgs:
         except exceptions.NoSuchElementException:
             print('h2 tag not found exceptions.NoSuchElementException')
 
-        if h2 == None:
+        if h2 is None:
             print('h2 tag none')
             return detail, sell_date
 
@@ -44,9 +45,9 @@ class Mgs:
         except exceptions.NoSuchElementException:
             print('h1 tag not found exceptions.NoSuchElementException')
 
-        title = ''
+        site_data = data.SiteData()
         if h1 != None:
-            title = h1.text
+            site_data.title = h1.text
 
         # 存在しない品番の場合は、forをそのままスルー、空文字でリターンされる
         for tr_tag in self.driver.find_elements_by_tag_name('tr'):
@@ -59,23 +60,71 @@ class Mgs:
             if not th_tag:
                 continue
 
-            if re.search('配信開始日', th_tag.text):
-                td_tag = tr_tag.find_element_by_tag_name('td')
-                sell_date = td_tag.text
             if re.search('出演', th_tag.text):
                 td_tag = tr_tag.find_element_by_tag_name('td')
-                detail += td_tag.text + '、'
+                site_data.actress = td_tag.text
+                # detail += td_tag.text + '、'
             if re.search('メーカー', th_tag.text):
                 td_tag = tr_tag.find_element_by_tag_name('td')
-                detail += td_tag.text + '、'
+                site_data.maker = td_tag.text
+                # detail += td_tag.text + '、'
+            if re.search('収録時間', th_tag.text):
+                td_tag = tr_tag.find_element_by_tag_name('td')
+                site_data.duration = td_tag.text
+            if re.search('品番', th_tag.text):
+                td_tag = tr_tag.find_element_by_tag_name('td')
+                site_data.productNumber = td_tag.text
+            if re.search('配信開始日', th_tag.text):
+                td_tag = tr_tag.find_element_by_tag_name('td')
+                site_data.streamDate = td_tag.text
+            if re.search('商品発売日', th_tag.text):
+                td_tag = tr_tag.find_element_by_tag_name('td')
+                site_data.sellDate = td_tag.text
+            if re.search('シリーズ', th_tag.text):
+                td_tag = tr_tag.find_element_by_tag_name('td')
+                site_data.series = td_tag.text
+            if re.search('レーベル', th_tag.text):
+                td_tag = tr_tag.find_element_by_tag_name('td')
+                site_data.label = td_tag.text
 
-        detail += title
+        # detail += title
 
-        return detail, sell_date
+        return site_data
 
     def get_info(self, product_number):
 
         return self.__get_info_from_chrome(product_number)
+
+    def exist_product_number(self, product_number):
+
+        self.driver.get(self.main_url + product_number + '/')
+
+        h2 = None
+        try:
+            h2 = self.driver.find_element_by_tag_name('h2')
+        except exceptions.NoSuchElementException:
+            print('h2 tag not found exceptions.NoSuchElementException')
+
+        if h2 is None:
+            print('h2 tag none')
+            return False
+
+        if h2.text == '年齢認証':
+            over18yes = self.driver.find_element_by_tag_name('li')
+            # over18yes = self.driver.find_element_by_id('id')
+            over18yes.click()
+
+        try:
+            h1 = self.driver.find_element_by_css_selector('.tag')
+        except exceptions.NoSuchElementException:
+            print('h1 tag not found exceptions.NoSuchElementException')
+            return False
+
+        # 存在しない品番の場合は、forをそのままスルー、空文字でリターンされる
+        for tr_tag in self.driver.find_elements_by_tag_name('tr'):
+            return True
+
+        return False
 
     def test_execute(self):
 

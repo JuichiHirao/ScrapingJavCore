@@ -1,7 +1,6 @@
 import unittest
-from javcore import common
-from javcore import data
-
+from src import common
+from src import data
 
 # PYTHONPATH=. python test/test_common.py -v
 class TestCopyText(unittest.TestCase):
@@ -78,6 +77,19 @@ class TestCopyText(unittest.TestCase):
         actual = copy_text.get_title('H0930 ki181021 エッチな0930 藤本 かおり Kaori Fu jimoto 31歳'
                                      , 'ki181021', match_maker)
         self.assertEqual(expected, actual)
+
+    # jav.titleがmaker.match_strに存在しない場合
+    def test_nomatch_maker(self):
+        jav_data = data.JavData()
+        jav_data.maker = 'てきとうめーかー'
+        jav_data.title = 'ABCD-9912 TESTTESTTEST'
+        parser = common.AutoMakerParser()
+        actual = parser.get_maker(jav_data)
+
+        expected = 'ABCD'
+        self.assertEqual(expected, actual.matchStr)
+        expected = 'てきとうめーかー'
+        self.assertEqual(expected, actual.matchName)
 
 
 if __name__ == "__main__":

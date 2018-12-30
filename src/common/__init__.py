@@ -1,6 +1,7 @@
 import re
 import os
 import sys
+from datetime import datetime
 from .. import data
 from .. import db
 from selenium import webdriver
@@ -87,7 +88,6 @@ class CopyText:
         zenkaku = ['１', '２', '３', '４', '５', '６', '７', '８', '９', '０', '　']
         movie_kind = ''
 
-
         match_search = re.search('[\[]*FHD[\]]*', copy_text)
         if match_search:
             movie_kind = ' FHD'
@@ -165,7 +165,7 @@ class ImportParser:
         self.replace_info_dao = db.replace_info.ReplaceInfoDao()
         self.replace_info_list = self.replace_info_dao.get_all()
 
-    def get_actress(self, jav: data.JavData()):
+    def get_actress(self, jav: data.JavData() = None):
 
         actress = ''
         for replace_info in self.replace_info_list:
@@ -180,3 +180,142 @@ class ImportParser:
             actress = ','.join(actress_list)
 
         return actress
+
+    def get_filename(self, import_data: data.ImportData() = None):
+
+        if import_data is None:
+            return ''
+
+        # import_data = data.ImportData()
+        kind_str = ''
+        if import_data.kind == 1:
+            kind_str = '[AVRIP]'
+        elif import_data.kind == 2:
+            kind_str = '[IVRIP]'
+        elif import_data.kind == 3:
+            kind_str = '[裏AVRIP]'
+        elif import_data.kind == 4:
+            kind_str = '[DMMR-AVRIP]'
+        elif import_data.kind == 5:
+            kind_str = '[DMMR-IVRIP]'
+
+        try:
+            sell_date_str = import_data.sellDate.strftime('%Y%m%d')
+        except AttributeError:
+            return ''
+
+        filename = kind_str + '【' + import_data.maker.strip() + '】' + import_data.title + ' ' \
+                   + '[' + import_data.productNumber + ' ' + sell_date_str + ']'
+
+        return filename
+
+
+class MatchStrNotFoundError(Exception):
+    pass
+
+
+class MatchStrSameError(Exception):
+    pass
+
+
+class AutoMakerParser:
+
+    def __init__(self, maker_dao: db.maker.MakerDao = None):
+        self.replace_info_dao = db.replace_info.ReplaceInfoDao()
+        self.replace_info_list = self.replace_info_dao.get_where_agreement('WHERE type like \'maker%\'')
+
+        if not maker_dao:
+            self.maker_dao = db.maker.MakerDao()
+        else:
+            self.maker_dao = maker_dao
+
+        # INSERT INTO replace_info (type, source, destination) VALUES('maker_name', 'プレステージ', 'PreStige');
+        # INSERT INTO replace_info (type, source, destination) VALUES('maker_m_name', 'プレステージ', 'プレステージ');
+
+    def get_maker(self, jav: data.JavData()):
+
+        m_p = re.search('[A-Z0-9]{2,5}-[A-Z0-9]{2,4}', jav.title, re.IGNORECASE)
+
+        if m_p:
+            p_number = m_p.group()
+            match_str = p_number.split('-')[0]
+        else:
+            err_msg = '[' + str(jav.id) \
+                      + '] 対象のmatch_strが存在しません [A-Z0-9]{3,5}-[A-Z0-9]{3,4}の正規表現と一致しません' \
+                      + jav.title
+            raise MatchStrNotFoundError(err_msg)
+
+        if len(match_str) > 0:
+            exist_maker = self.maker_dao.get_exist(match_str.upper())
+            if exist_maker:
+                err_msg = '[' + str(jav.id) + '] 発見!! [' + match_str + ']'
+                exist_maker.print()
+                raise MatchStrSameError(err_msg)
+
+        maker = data.MakerData()
+        maker.name = jav.maker
+        maker.kind = 1
+        maker.matchStr = match_str.upper()
+        maker.label = jav.label
+        maker.registeredBy = 'AUTO ' + datetime.now().strftime('%Y-%m-%d')
+
+        maker.name = self.apply_replace_info(jav.maker, ('maker_name', 'maker_m_name'))
+        maker.label = self.apply_replace_info(jav.label, ('maker_label', 'maker_m_label'))
+
+        return maker
+
+    def get_maker_from_site(self, site_data: data.SiteData(), site_name: str = ''):
+
+        m_p = re.search('[A-Z0-9]{4,10}-[A-Z0-9]{2,4}', site_data.productNumber, re.IGNORECASE)
+
+        if m_p:
+            p_number = m_p.group()
+            match_str = p_number.split('-')[0]
+        else:
+            err_msg = 'site_data.productNumber[' + str(site_data.productNumber) \
+                      + '] が所定の形式ではありません [A-Z0-9]{4,10}-[A-Z0-9]{3,4}の正規表現と一致しません'
+            raise MatchStrNotFoundError(err_msg)
+
+        maker = data.MakerData()
+
+        if site_name.lower() == 'mgs':
+            if site_data.maker == 'プレステージ':
+                maker.name = site_data.maker
+                maker.matchName = site_data.maker
+                maker.label = site_data.label
+            else:
+                maker.name = site_name
+                maker.matchName = site_name
+                maker.label = site_data.maker
+            maker.siteKind = 2
+        else:
+            maker.name = site_name
+            maker.matchName = site_name
+            maker.label = site_data.maker
+
+        maker.kind = 1
+        maker.matchStr = match_str.upper()
+        maker.registeredBy = 'AUTO ' + datetime.now().strftime('%Y-%m-%d')
+
+        maker.name = self.apply_replace_info(maker.name, ('maker_name', 'maker_m_name'))
+        maker.label = self.apply_replace_info(maker.label, ('maker_label', 'maker_m_label'))
+
+        return maker
+
+    def apply_replace_info(self, target_str: str = '', apply_list: list = None):
+
+        apply_str = ''
+        for replace_info in self.replace_info_list:
+            if apply_list == 'all':
+                apply_str = self.__get_type_replace(target_str, replace_info)
+            if replace_info.type in apply_list:
+                apply_str = self.__get_type_replace(target_str, replace_info)
+
+        return apply_str
+
+    def __get_type_replace(self, target_str: str = '', replace_info: data.ReplaceInfoData = None):
+
+        if replace_info.sourceType == 'text':
+            return target_str.replace(replace_info.source, replace_info.destination)
+
+        return ''

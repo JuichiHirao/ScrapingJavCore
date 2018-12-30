@@ -124,13 +124,29 @@ class MakerData:
 
         return self.name + '：' + self.label
 
-    def print(self):
-        print('【' + self.name + ':' + self.label + '】')
-        print('  kind    [' + str(self.kind) + ']')
-        print('  match   [' + self.matchStr + ']')
-        print('  match_p [' + self.matchProductNumber + ']')
-        print('  created [' + str(self.createdAt) + ']')
-        print('  updated [' + str(self.updatedAt) + ']')
+    def get_print_list(self, indent: str = ''):
+
+        print_list = []
+
+        print_list.append(indent + '【' + self.name + ':' + self.label + '】')
+        print_list.append(indent + '  id       [' + str(self.id) + ']')
+        print_list.append(indent + '  kind     [' + str(self.kind) + ']')
+        print_list.append(indent + '  matchNam [' + self.matchName + ']')
+        print_list.append(indent + '  matchStr [' + self.matchStr + ']')
+        print_list.append(indent + '  matchPNum[' + self.matchProductNumber + ']')
+        print_list.append(indent + '  siteKind [' + str(self.siteKind) + ']')
+        print_list.append(indent + '  reWords  [' + str(self.replaceWords) + ']')
+        print_list.append(indent + '  pNumGen  [' + str(self.pNumberGen) + ']')
+        print_list.append(indent + '  regBy    [' + str(self.registeredBy) + ']')
+        print_list.append(indent + '  created  [' + str(self.createdAt) + ']')
+        print_list.append(indent + '  updated  [' + str(self.updatedAt) + ']')
+
+        return print_list
+
+    def print(self, indent: str = ''):
+
+        print_list = self.get_print_list(indent)
+        print('\n'.join(print_list))
         print(' ')
 
 
@@ -175,4 +191,45 @@ class ReplaceInfoData:
         self.sourceType = ''
         self.createdAt = None
         self.updatedAt = None
+
+
+class SiteData:
+
+    def __init__(self):
+
+        self.name = ''
+        self.title = ''
+        self.actress = ''
+        self.maker = ''
+        self.duration = ''
+        self.productNumber = ''
+        self.streamDate = ''
+        self.sellDate = ''
+        self.series = ''
+        self.label = ''
+
+    def get_detail(self):
+        return self.streamDate + '、' + self.sellDate + '、' + self.actress + '、' + self.title
+
+    def get_print_list(self, indent: str = ''):
+
+        print_list = []
+
+        print_list.append(indent + '【' + self.name + '】')
+        print_list.append(indent + '  title      [' + self.title + ']')
+        print_list.append(indent + '  actress    [' + self.actress + ']')
+        print_list.append(indent + '  maker      [' + self.maker + ']')
+        print_list.append(indent + '  duration   [' + self.duration + ']')
+        print_list.append(indent + '  pNumber    [' + self.productNumber + ']')
+        print_list.append(indent + '  streamDate [' + self.streamDate + ']')
+        print_list.append(indent + '  sellDate   [' + self.sellDate + ']')
+        print_list.append(indent + '  series     [' + self.series + ']')
+
+        return print_list
+
+    def print(self, indent: str = ''):
+
+        print_list = self.get_print_list(indent)
+        print('\n'.join(print_list))
+        print(' ')
 

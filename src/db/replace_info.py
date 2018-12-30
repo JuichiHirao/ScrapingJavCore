@@ -28,12 +28,12 @@ class ReplaceInfoDao(mysql_base.MysqlBase):
 
         rs = self.cursor.fetchall()
 
-        javs = self.__get_list(rs)
+        rep_info_list = self.__get_list(rs)
 
-        if javs is None or len(javs) <= 0:
+        if rep_info_list is None or len(rep_info_list) <= 0:
             return None
 
-        return javs
+        return rep_info_list
 
     def __get_sql_select(self):
         sql = 'SELECT id' \
