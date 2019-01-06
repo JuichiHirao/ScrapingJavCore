@@ -63,12 +63,42 @@ class Jav2Data:
     def __init__(self):
         self.id = -1
         self.title = ''
+        self.postDate = None
+        self.package = ''
+        self.thumbnail = ''
         self.downloadLinks = ''
         self.kind = ''
         self.url = ''
         self.detail = ''
+        self.filesInfo = ''
         self.createdAt = None
         self.updatedAt = None
+
+    def get_print_list(self, indent: str = ''):
+
+        print_list = []
+
+        print_list.append(indent + '【' + self.title + '】')
+        print_list.append(indent + '  id       [' + str(self.id) + ']')
+        print_list.append(indent + '  post_data[' + str(self.postDate) + ']')
+        print_list.append(indent + '  package  [' + self.package + ']')
+        print_list.append(indent + '  thumbnail[' + self.thumbnail + ']')
+        print_list.append(indent + '  dl_links [' + self.downloadLinks + ']')
+        print_list.append(indent + '  file_info[' + self.filesInfo + ']')
+        print_list.append(indent + '  kind     [' + self.kind + ']')
+        print_list.append(indent + '  detail   [' + self.detail + ']')
+        print_list.append(indent + '  url      [' + self.url+ ']')
+        print_list.append(indent + '  created  [' + str(self.createdAt) + ']')
+        print_list.append(indent + '  updated  [' + str(self.updatedAt) + ']')
+
+        return print_list
+
+    def print(self, indent: str = ''):
+
+        print_list = self.get_print_list(indent)
+
+        print('\n'.join(print_list))
+        print(' ')
 
 
 class BjData:

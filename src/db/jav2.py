@@ -91,10 +91,16 @@ class Jav2Dao(mysql_base.MysqlBase):
 
     def export(self, jav2_data: data.Jav2Data):
 
-        sql = 'INSERT INTO jav2 (title, download_links, kind, url, detail)' \
-                ' VALUES(%s, %s, %s, %s, %s)'
+        sql = 'INSERT INTO jav2 (title'\
+              '    , post_date, package, thumbnail, download_links ' \
+              '    , files_info, kind, url, detail)' \
+              '  VALUES(%s' \
+              '    , %s, %s, %s, %s'\
+              '    , %s, %s, %s, %s)'
 
-        self.cursor.execute(sql, (jav2_data.title, jav2_data.downloadLinks, jav2_data.kind, jav2_data.url, jav2_data.detail))
+        self.cursor.execute(sql, (jav2_data.title
+                                  , jav2_data.postDate, jav2_data.package, jav2_data.thumbnail, jav2_data.downloadLinks
+                                  , jav2_data.filesInfo, jav2_data.kind, jav2_data.url, jav2_data.detail))
 
         self.conn.commit()
 
