@@ -42,7 +42,7 @@ class JavDao(mysql_base.MysqlBase):
               '  , sell_date, actress, maker, label ' \
               '  , download_links, download_files, url, is_selection ' \
               '  , product_number, rating, is_site, is_parse2 ' \
-              '  , makers_id, search_result, detail ' \
+              '  , makers_id, search_result, detail, files_info ' \
               '  , created_at, updated_at ' \
               '  FROM jav '
 
@@ -73,8 +73,9 @@ class JavDao(mysql_base.MysqlBase):
             jav.makersId = row[17]
             jav.searchResult = row[18]
             jav.detail = row[19]
-            jav.createdAt = row[20]
-            jav.updatedAt = row[21]
+            jav.filesInfo = row[20]
+            jav.createdAt = row[21]
+            jav.updatedAt = row[22]
             javs.append(jav)
 
         return javs
@@ -105,9 +106,10 @@ class JavDao(mysql_base.MysqlBase):
               '  SET package = %s ' \
               '    , thumbnail = %s ' \
               '    , download_links = %s ' \
+              '    , files_info = %s ' \
               '  WHERE id = %s'
 
-        self.cursor.execute(sql, (jav_data.package, jav_data.thumbnail, jav_data.downloadLinks, jav_data.id))
+        self.cursor.execute(sql, (jav_data.package, jav_data.thumbnail, jav_data.downloadLinks, jav_data.filesInfo, jav_data.id))
         print("jav update id [" + str(id) + "] collect_info")
 
         self.conn.commit()
@@ -196,15 +198,18 @@ class JavDao(mysql_base.MysqlBase):
         sql = 'INSERT INTO jav (title, post_date ' \
                 '  , sell_date, actress, maker, label' \
                 '  , url, product_number, makers_id, is_parse2 ' \
+                '  , files_info ' \
                 '  ) ' \
                 ' VALUES(%s, %s' \
                 '  , %s, %s, %s, %s' \
                 '  , %s, %s, %s, %s' \
+                '  , %s ' \
                 ' )'
 
         self.cursor.execute(sql, (jav_data.title, jav_data.postDate
                             , jav_data.sellDate, jav_data.actress, jav_data.maker, jav_data.label
                             , jav_data.url, jav_data.productNumber, jav_data.makersId, jav_data.isParse2
-                            ))
+                            , jav_data.filesInfo)
+                            )
 
         self.conn.commit()

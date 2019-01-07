@@ -16,6 +16,7 @@ class JavData:
         self.label = ''
         self.downloadLinks = ''
         self.downloadFiles = ''
+        self.filesInfo = ''
         self.productNumber = ''
         self.isSelection = False
         self.isParse2 = False
