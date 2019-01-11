@@ -238,6 +238,8 @@ class SiteData:
         self.sellDate = ''
         self.series = ''
         self.label = ''
+        self.fileSize = ''
+        self.screenSize = ''
 
     def get_detail(self):
         return self.streamDate + '、' + self.sellDate + '、' + self.actress + '、' + self.title
@@ -255,6 +257,8 @@ class SiteData:
         print_list.append(indent + '  streamDate [' + self.streamDate + ']')
         print_list.append(indent + '  sellDate   [' + self.sellDate + ']')
         print_list.append(indent + '  series     [' + self.series + ']')
+        print_list.append(indent + '  fileSize   [' + self.fileSize + ']')
+        print_list.append(indent + '  screenSize [' + self.screenSize + ']')
 
         return print_list
 
