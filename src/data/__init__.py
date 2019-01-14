@@ -159,6 +159,11 @@ class MakerData:
 
         print_list = []
 
+        if self.name is None:
+            self.name = ''
+
+        if self.label is None:
+            self.label = ''
         print_list.append(indent + '【' + self.name + ':' + self.label + '】')
         print_list.append(indent + '  id       [' + str(self.id) + ']')
         print_list.append(indent + '  kind     [' + str(self.kind) + ']')
