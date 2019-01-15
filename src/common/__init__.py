@@ -249,14 +249,16 @@ class AutoMakerParser:
             exist_maker = self.maker_dao.get_exist(match_str.upper())
             if exist_maker:
                 err_msg = '[' + str(jav.id) + '] 発見!! [' + match_str + ']'
-                exist_maker.print()
+                # exist_maker.print()
                 raise MatchStrSameError(err_msg)
 
         maker = data.MakerData()
-        maker.name = jav.maker
+        maker.name = jav.maker.replace('/', '／')
+        maker.matchName = jav.maker.replace('/', '[/／]')
         maker.kind = 1
         maker.matchStr = match_str.upper()
         maker.label = jav.label
+        maker.matchLabel = jav.label
         maker.registeredBy = 'AUTO ' + datetime.now().strftime('%Y-%m-%d')
 
         maker.name = self.apply_replace_info(jav.maker, ('maker_name', 'maker_m_name'))

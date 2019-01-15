@@ -21,6 +21,10 @@ class ProductNumber:
                                          len(maker.matchProductNumber.strip()) > 0
                                          and len(maker.matchStr) > 0, self.makers))
 
+    def append_maker(self, maker_data: data.MakerData() = None):
+
+        self.makers.append(maker_data)
+
     def __log_print(self, msg: str = ''):
 
         if self.is_log_print:
@@ -35,10 +39,40 @@ class ProductNumber:
 
         return log_list
 
+    def __get_p_number(self, title: str = ''):
+
+        match = re.search('[0-9A-Za-z]*-[0-9A-Za-z]*', title)
+
+        if match:
+            return match.group()
+
+        return ''
+
+    def get_p_number_hey(self, title: str = ''):
+
+        if len(title) <= 0:
+            return 0
+
+        p_number = ''
+        label = ''
+        m1 = re.search('4[0-9]{3}-PPV[0-9]{3,4}', title)
+        m2 = re.search('4[0-9]{3}-[0-9]{3,4}', title)
+        if m1 or m2:
+            if m1:
+                p_number = m1.group()
+            else:
+                p_number = m2.group()
+
+        if len(p_number) > 0:
+            label = re.sub(p_number + '.*', '', title)
+
+        return p_number, label
+
+
     def get_maker_match_number(self, match_maker: data.MakerData(), title: str = ''):
 
         if match_maker is None:
-            return None
+            return self.__get_p_number(title)
 
         if len(match_maker.matchProductNumber.strip()) > 0:
             m = re.search(match_maker.matchProductNumber, title, flags=re.IGNORECASE)
@@ -121,7 +155,8 @@ class ProductNumber:
         if len(label_name) <= 0:
             find_filter_label = filter(lambda maker: len(maker.label) == 0, find_list_label)
         else:
-            find_filter_label = filter(lambda maker: maker.label == label_name, find_list_label)
+            find_filter_label = filter(lambda maker: re.search(maker.matchLabel + '[\-0-9]', label_name, re.IGNORECASE)
+                                       , find_list_label)
 
         find_list_label = list(find_filter_label)
         if len(find_list_label) <= 0:
@@ -188,11 +223,10 @@ class ProductNumber:
     #   -23 : タイトル内にpNumberらしき文字列【[0-9A-Za-z]*-[0-9A-Za-z]】*が存在しない
     def __get_match_maker_force(self, title: str = ''):
 
-        match = re.search('[0-9A-Za-z]*-[0-9A-Za-z]*', title)
+        p_number = self.__get_p_number(title)
         result_maker = None
 
-        if match:
-            p_number = match.group().strip()
+        if len(p_number) > 0:
             p_maker = p_number.split('-')[0]
 
             find_filter_maker = filter(lambda maker: maker.matchStr.upper() == p_maker.upper(), self.makers)
@@ -222,7 +256,8 @@ class ProductNumber:
 
     def parse(self, jav: data.JavData, is_check):
 
-        match_maker, ng_reason = self.__get_maker_exist_name(jav.maker, jav.label, jav.title)
+        edit_label = jav.label.replace('—-', '')
+        match_maker, ng_reason = self.__get_maker_exist_name(jav.maker, edit_label, jav.title)
 
         if ng_reason == 0:
             match_maker, ng_reason = self.__get_maker_not_exist_name(jav.title)

@@ -32,7 +32,7 @@ class Mgs:
 
         if h2 is None:
             print('h2 tag none')
-            return detail, sell_date
+            return None
 
         if h2.text == '年齢認証':
             over18yes = self.driver.find_element_by_tag_name('li')

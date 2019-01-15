@@ -40,10 +40,9 @@ class MakerDao(mysql_base.MysqlBase):
     def __get_sql_select(self, where: str = ''):
 
         sql = 'SELECT id ' \
-              '  , name, match_name, label, kind ' \
-              '  , match_str, match_product_number, site_kind, replace_words ' \
-              '  , p_number_gen, registered_by ' \
-              '  , created_at, updated_at ' \
+              '  , name, match_name, label, match_label ' \
+              '  , kind, match_str, match_product_number, site_kind ' \
+              '  , replace_words, p_number_gen, registered_by ' \
               '  , created_at, updated_at ' \
               '  FROM maker '
 
@@ -63,15 +62,16 @@ class MakerDao(mysql_base.MysqlBase):
             maker.name = row[1]
             maker.matchName = row[2]
             maker.label = row[3]
-            maker.kind = row[4]
-            maker.matchStr = row[5]
-            maker.matchProductNumber = row[6]
-            maker.siteKind = row[7]
-            maker.replaceWords = row[8]
-            maker.pNumberGen = row[9]
-            maker.registeredBy = row[10]
-            maker.createdAt = row[11]
-            maker.updatedAt = row[12]
+            maker.matchLabel = row[4]
+            maker.kind = row[5]
+            maker.matchStr = row[6]
+            maker.matchProductNumber = row[7]
+            maker.siteKind = row[8]
+            maker.replaceWords = row[9]
+            maker.pNumberGen = row[10]
+            maker.registeredBy = row[11]
+            maker.createdAt = row[12]
+            maker.updatedAt = row[13]
             makers.append(maker)
 
         return makers
