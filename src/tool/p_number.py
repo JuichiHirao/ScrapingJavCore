@@ -1,4 +1,5 @@
 import re
+import traceback
 from .. import db
 from .. import data
 from .. import site
@@ -59,15 +60,14 @@ class ProductNumber:
         m2 = re.search('4[0-9]{3}-[0-9]{3,4}', title)
         if m1 or m2:
             if m1:
-                p_number = m1.group()
+                p_number = m1.group().replace('-', '_').replace('PPV', '')
             else:
-                p_number = m2.group()
+                p_number = m2.group().replace('-', '_')
 
         if len(p_number) > 0:
             label = re.sub(p_number + '.*', '', title)
 
         return p_number, label
-
 
     def get_maker_match_number(self, match_maker: data.MakerData(), title: str = ''):
 
@@ -155,8 +155,8 @@ class ProductNumber:
         if len(label_name) <= 0:
             find_filter_label = filter(lambda maker: len(maker.label) == 0, find_list_label)
         else:
-            find_filter_label = filter(lambda maker: re.search(maker.matchLabel + '[\-0-9]', label_name, re.IGNORECASE)
-                                       , find_list_label)
+            find_filter_label = filter(lambda maker: re.search(maker.matchLabel, label_name, re.IGNORECASE)
+                                       and len(maker.matchLabel) > 0, find_list_label)
 
         find_list_label = list(find_filter_label)
         if len(find_list_label) <= 0:
@@ -256,6 +256,11 @@ class ProductNumber:
 
     def parse(self, jav: data.JavData, is_check):
 
+        i = 0
+        if jav.id == 17144:
+        #     m1 = re.search('(G-AREA|GAREA)', jav.title, flags=re.IGNORECASE)
+        #     m2 = re.search('[0-9]{3,4}[a-zA-Z]{1,8}', jav.title, flags=re.IGNORECASE)
+            i = 1
         edit_label = jav.label.replace('—-', '')
         match_maker, ng_reason = self.__get_maker_exist_name(jav.maker, edit_label, jav.title)
 

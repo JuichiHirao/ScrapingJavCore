@@ -236,6 +236,9 @@ class AutoMakerParser:
 
         m_p = re.search('[A-Z0-9]{2,5}-[A-Z0-9]{2,4}', jav.title, re.IGNORECASE)
 
+        jav_name = jav.maker.replace('/', '／')
+        jav_label = jav.label.replace('—-', '').replace('/', '／')
+
         if m_p:
             p_number = m_p.group()
             match_str = p_number.split('-')[0]
@@ -253,16 +256,15 @@ class AutoMakerParser:
                 raise MatchStrSameError(err_msg)
 
         maker = data.MakerData()
-        maker.name = jav.maker.replace('/', '／')
-        maker.matchName = jav.maker.replace('/', '[/／]')
         maker.kind = 1
         maker.matchStr = match_str.upper()
-        maker.label = jav.label
-        maker.matchLabel = jav.label
+        maker.matchLabel = jav_label
         maker.registeredBy = 'AUTO ' + datetime.now().strftime('%Y-%m-%d')
 
-        maker.name = self.apply_replace_info(jav.maker, ('maker_name', 'maker_m_name'))
-        maker.label = self.apply_replace_info(jav.label, ('maker_label', 'maker_m_label'))
+        maker.matchName = self.apply_replace_info(jav_name, ('maker_m_name',))
+        maker.name = self.apply_replace_info(jav_name, ('maker_name',))
+        maker.label = self.apply_replace_info(jav_label, ('maker_label',))
+        maker.matchLabel = self.apply_replace_info(jav_label, ('maker_m_label',))
 
         return maker
 
@@ -299,8 +301,12 @@ class AutoMakerParser:
         maker.matchStr = match_str.upper()
         maker.registeredBy = 'AUTO ' + datetime.now().strftime('%Y-%m-%d')
 
-        maker.name = self.apply_replace_info(maker.name, ('maker_name', 'maker_m_name'))
-        maker.label = self.apply_replace_info(maker.label, ('maker_label', 'maker_m_label'))
+        maker.matchName = self.apply_replace_info(maker.name, ('maker_m_name',))
+        maker.name = self.apply_replace_info(maker.name, ('maker_name',))
+        maker.label = self.apply_replace_info(maker.label, ('maker_label',))
+        maker.matchLabel = self.apply_replace_info(maker.label, ('maker_m_label',))
+        maker.name = maker.name.replace('/', '／')
+        maker.label = maker.label.replace('—-', '')
 
         return maker
 

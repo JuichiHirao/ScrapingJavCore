@@ -104,20 +104,31 @@ class MakerDao(mysql_base.MysqlBase):
 
         return exist
 
+    def update_deleted(self, deleted: str = '', id: int = 0):
+
+        sql = 'UPDATE maker ' \
+              '  SET deleted = %s ' \
+              '  WHERE id = %s'
+
+        self.cursor.execute(sql, (deleted, id))
+        print("maker update id [" + str(id) + "] deleted ")
+
+        return
+
     def export(self, maker: data.MakerData):
 
         sql = 'INSERT INTO maker ( ' \
-              '  name, match_name, label, kind ' \
+              '  name, match_name, label, match_label, kind ' \
               '  , match_str, match_product_number, site_kind, replace_words ' \
               '  , p_number_gen, registered_by ' \
               '  ) ' \
               '  VALUES ( ' \
-              '  %s, %s, %s, %s ' \
+              '  %s, %s, %s, %s, %s ' \
               '  , %s, %s, %s, %s ' \
               '  , %s, %s ' \
               '  ) '
 
-        self.cursor.execute(sql, (maker.name, maker.matchName, maker.label, maker.kind
+        self.cursor.execute(sql, (maker.name, maker.matchName, maker.label, maker.matchLabel, maker.kind
                                   , maker.matchStr, maker.matchProductNumber, maker.siteKind, maker.replaceWords
                                   , maker.pNumberGen, maker.registeredBy
                                   ))
