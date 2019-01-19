@@ -232,6 +232,27 @@ class AutoMakerParser:
         # INSERT INTO replace_info (type, source, destination) VALUES('maker_name', 'プレステージ', 'PreStige');
         # INSERT INTO replace_info (type, source, destination) VALUES('maker_m_name', 'プレステージ', 'プレステージ');
 
+    def get_maker_hey(self, p_number: str = '', site_data: data.SiteData() = None):
+
+        '''
+        INSERT INTO scraping.maker (name, match_name, label, kind, match_str, match_product_number, site_kind, replace_words, p_number_gen, deleted, registered_by)
+          VALUES ('HEY動画', 'HEY動画', 'おじさんの個人撮影', 3, '(4197|おじさんの個人撮影)', 'PPV[0-9]{3}', 0, 'PPV', 1, 0, 'MANUAL 2018-12-23');
+        '''
+        arr_p_number = p_number.split('_')
+        maker = data.MakerData()
+        maker.kind = 3
+        maker.name = 'HEY動画'
+        maker.matchName = 'HEY動画'
+        maker.label = site_data.maker
+        maker.matchLabel = site_data.maker
+        maker.matchStr = '(' + arr_p_number[0] + '|' + site_data.maker + ')'
+        maker.matchProductNumber = '(\-[0-9]{3,4}|PPV[0-9]{3,4}'
+        maker.replaceWords = 'PPV'
+        maker.pNumberGen = 1
+        maker.registeredBy = 'AUTO ' + datetime.now().strftime('%Y-%m-%d')
+
+        return maker
+
     def get_maker(self, jav: data.JavData()):
 
         m_p = re.search('[A-Z0-9]{2,5}-[A-Z0-9]{2,4}', jav.title, re.IGNORECASE)
@@ -293,9 +314,9 @@ class AutoMakerParser:
                 maker.label = site_data.maker
             maker.siteKind = 2
         else:
-            maker.name = site_name
-            maker.matchName = site_name
-            maker.label = site_data.maker
+            maker.name = site_data.maker
+            maker.matchName = site_data.maker
+            maker.label = site_data.label
 
         maker.kind = 1
         maker.matchStr = match_str.upper()
@@ -312,12 +333,12 @@ class AutoMakerParser:
 
     def apply_replace_info(self, target_str: str = '', apply_list: list = None):
 
-        apply_str = ''
+        apply_str = target_str
         for replace_info in self.replace_info_list:
             if apply_list == 'all':
-                apply_str = self.__get_type_replace(target_str, replace_info)
+                apply_str = self.__get_type_replace(apply_str, replace_info)
             if replace_info.type in apply_list:
-                apply_str = self.__get_type_replace(target_str, replace_info)
+                apply_str = self.__get_type_replace(apply_str, replace_info)
 
         return apply_str
 

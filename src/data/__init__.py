@@ -239,6 +239,7 @@ class SiteData:
         self.title = ''
         self.actress = ''
         self.maker = ''
+        self.label = ''
         self.duration = ''
         self.productNumber = ''
         self.streamDate = ''
@@ -259,6 +260,7 @@ class SiteData:
         print_list.append(indent + '  title      [' + self.title + ']')
         print_list.append(indent + '  actress    [' + self.actress + ']')
         print_list.append(indent + '  maker      [' + self.maker + ']')
+        print_list.append(indent + '  label      [' + self.label + ']')
         print_list.append(indent + '  duration   [' + self.duration + ']')
         print_list.append(indent + '  pNumber    [' + self.productNumber + ']')
         print_list.append(indent + '  streamDate [' + self.streamDate + ']')

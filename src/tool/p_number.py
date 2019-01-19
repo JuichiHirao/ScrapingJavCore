@@ -40,6 +40,10 @@ class ProductNumber:
 
         return log_list
 
+    def get_p_number(self, title: str = ''):
+
+        return self.__get_p_number(title)
+
     def __get_p_number(self, title: str = ''):
 
         match = re.search('[0-9A-Za-z]*-[0-9A-Za-z]*', title)
@@ -256,11 +260,6 @@ class ProductNumber:
 
     def parse(self, jav: data.JavData, is_check):
 
-        i = 0
-        if jav.id == 17144:
-        #     m1 = re.search('(G-AREA|GAREA)', jav.title, flags=re.IGNORECASE)
-        #     m2 = re.search('[0-9]{3,4}[a-zA-Z]{1,8}', jav.title, flags=re.IGNORECASE)
-            i = 1
         edit_label = jav.label.replace('—-', '')
         match_maker, ng_reason = self.__get_maker_exist_name(jav.maker, edit_label, jav.title)
 
@@ -269,13 +268,16 @@ class ProductNumber:
 
         if ng_reason == 0:
             match_maker, ng_reason = self.__get_match_maker_force(jav.title)
+            p_number = self.__get_p_number(jav.title)
 
+        '''
         if ng_reason > 0:
             if not is_check:
                 self.jav_dao.update_checked_ok(ng_reason, match_maker.id, jav)
         else:
             if not is_check:
                 self.jav_dao.update_checked_ok(ng_reason, 0, jav)
+        '''
 
         return match_maker, ng_reason
 
