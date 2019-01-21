@@ -135,6 +135,7 @@ class MakerData:
         self.name = ''
         self.matchName = ''
         self.label = ''
+        self.matchLabel = ''
         self.kind = 0
         self.matchStr = ''
         self.matchProductNumber = ''
@@ -159,10 +160,16 @@ class MakerData:
 
         print_list = []
 
+        if self.name is None:
+            self.name = ''
+
+        if self.label is None:
+            self.label = ''
         print_list.append(indent + '【' + self.name + ':' + self.label + '】')
         print_list.append(indent + '  id       [' + str(self.id) + ']')
         print_list.append(indent + '  kind     [' + str(self.kind) + ']')
         print_list.append(indent + '  matchNam [' + self.matchName + ']')
+        print_list.append(indent + '  matchLab [' + self.matchLabel + ']')
         print_list.append(indent + '  matchStr [' + self.matchStr + ']')
         print_list.append(indent + '  matchPNum[' + self.matchProductNumber + ']')
         print_list.append(indent + '  siteKind [' + str(self.siteKind) + ']')
@@ -232,6 +239,7 @@ class SiteData:
         self.title = ''
         self.actress = ''
         self.maker = ''
+        self.label = ''
         self.duration = ''
         self.productNumber = ''
         self.streamDate = ''
@@ -252,6 +260,7 @@ class SiteData:
         print_list.append(indent + '  title      [' + self.title + ']')
         print_list.append(indent + '  actress    [' + self.actress + ']')
         print_list.append(indent + '  maker      [' + self.maker + ']')
+        print_list.append(indent + '  label      [' + self.label + ']')
         print_list.append(indent + '  duration   [' + self.duration + ']')
         print_list.append(indent + '  pNumber    [' + self.productNumber + ']')
         print_list.append(indent + '  streamDate [' + self.streamDate + ']')

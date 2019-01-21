@@ -181,11 +181,27 @@ class JavDao(mysql_base.MysqlBase):
 
         self.conn.commit()
 
+    def update_maker_label(self, maker: str = '', label: str = '', id: int = 0):
+
+        sql = 'UPDATE jav ' \
+              '  SET maker = %s ' \
+              '    , label = %s ' \
+              '  WHERE id = %s'
+
+        self.cursor.execute(sql, (maker, label, id))
+        print("jav update id [" + str(id) + "] maker, label")
+
+        self.conn.commit()
+
     def update_detail_and_sell_date(self, detail: str = '', sell_date: str = '', id: int = 0):
+
+        if len(sell_date) <= 0:
+            sell_date = None
 
         sql = 'UPDATE jav ' \
               '  SET detail = %s ' \
               '    , sell_date = %s ' \
+              '    , is_site = 1 ' \
               '  WHERE id = %s'
 
         self.cursor.execute(sql, (detail, sell_date, id))
