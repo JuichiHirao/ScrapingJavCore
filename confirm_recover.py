@@ -10,11 +10,13 @@ maker_dao = db.maker.MakerDao()
 mgs = site.mgs.Mgs()
 hey = site.hey.Hey()
 fanza = site.fanza.Fanza()
-# javs = jav_dao.get_where_agreement('WHERE is_parse2 <= 0 and is_selection = 1 order by id limit 50')
-javs = jav_dao.get_where_agreement('WHERE is_parse2 <= 0 and is_selection = 1 and id <= 16546 order by id limit 50')
+javs = jav_dao.get_where_agreement('WHERE is_parse2 <= 0 and is_selection = 1 order by id')
+# javs = jav_dao.get_where_agreement('WHERE is_parse2 <= 0 and is_selection = 1 and id <= 17143 order by id limit 50')
 
 parser = common.AutoMakerParser()
 
+if javs is None:
+    javs = []
 print('target [' + str(len(javs)) + ']')
 p_tool = tool.p_number.ProductNumber(is_log_print=False)
 err_list = []
@@ -79,7 +81,9 @@ for jav in javs:
                 makers = maker_dao.get_where_agreement('WHERE label = %s', (site_data.maker, ))
 
                 if makers is not None:
-                    err_list.append('      【' + site_data.maker + '】はmakerに存在 maker_id [' + str(makers[0].id))
+                    err_list.append('      [' + site_data.streamDate + '] 【' + site_data.maker + '】')
+                    err_list.append('      HEY【' + site_data.maker + '】はmakerに存在 maker_id ['
+                                    + str(makers[0].id) + ']')
                     continue
 
                 err_list.append('      [' + site_data.streamDate + '] 【' + site_data.maker + '】')

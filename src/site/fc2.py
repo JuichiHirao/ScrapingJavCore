@@ -1,7 +1,10 @@
 import urllib.request
+import sys
+import re
 from time import sleep
 from bs4 import BeautifulSoup
-from javcore import common
+from .. import common
+from .. import data
 
 
 class Fc2:
@@ -22,37 +25,42 @@ class Fc2:
 
         sleep(1)
 
-        sell_date = ''
-        seller = ''
+        site_data = None
         for main_info in self.driver.find_elements_by_css_selector('.main_info_block'):
             sleep(1)
             block_text = main_info.text
             # print(main_info.text)
-            seller, sell_date = self.__parse_lines(block_text.splitlines())
+            site_data = self.__get_site_data(block_text.splitlines())
 
         self.driver.close()
 
-        return seller, sell_date
+        return site_data
 
-    def __parse_lines(self, lines):
-        is_date = False
-        is_seller = False
+    def __get_site_data(self, lines):
+
+        site_data = data.SiteData()
+
+        before_name = ''
         for line in lines:
-            if is_date:
-                sell_date = line.strip()
-                is_date = False
-            if is_seller:
-                seller = line.strip()
-                is_seller = False
+            if before_name == 'sell_date':
+                site_data.streamDate = line.strip()
+                before_name = ''
+            if re.search('販売日', line) or re.search('配信.*日', line):
+                before_name = 'sell_date'
 
-            if len(line.strip()) <= 0:
-                continue
-            if line.strip() == '販売日':
-                is_date = True
-            if line.strip() == '販売者':
-                is_seller = True
+            if before_name == 'maker':
+                site_data.maker = line.strip()
+                before_name = ''
+            if re.search('販売者', line):
+                before_name = 'maker'
 
-        return seller, sell_date
+            if before_name == 'duration':
+                site_data.duration = line.strip()
+                before_name = ''
+            if re.search('再生時間', line):
+                before_name = 'duration'
+
+        return site_data
 
     def __get_info(self, product_number):
 
@@ -63,24 +71,21 @@ class Fc2:
             html = response.read()
             html_soup = BeautifulSoup(html, "html.parser")
             block_text = html_soup.find('div', class_='main_info_block').text
-            # print(block_text)
 
-            seller, sell_date = self.__parse_lines(block_text.splitlines())
+            site_data = self.__get_site_data(block_text.splitlines())
 
         urllib.request.urlcleanup()
 
-        return seller, sell_date
+        return site_data
 
     def get_info(self, product_number):
 
         try:
-            # sleep(3)
-            # return self.__get_info(product_number)
-            return self.__get_info_from_chrome(product_number)
-        except:
-            # return self.__get_info(product_number)
-            return '', ''
+            return self.__get_info(product_number)
             # return self.__get_info_from_chrome(product_number)
+        except:
+            print(sys.exc_info())
+            return None
 
 
 if __name__ == '__main__':

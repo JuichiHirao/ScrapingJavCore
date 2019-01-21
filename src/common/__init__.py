@@ -80,6 +80,28 @@ class CopyText:
     def __init__(self, is_debug: bool = False):
         self.is_debug = is_debug
 
+    def get_date_ura(self, title: str = ''):
+
+        str_date = ''
+        try:
+            if 'カリビアン' in title:
+                m_date = re.search('(?P<ura_date>[0-1][0-9][0-3][0-9][0-2][0-9])[_-][0-9]{3,4}', title)
+            elif '天然むすめ' in title:
+                m_date = re.search('(?P<ura_date>[0-1][0-9][0-3][0-9][0-2][0-9])_[0-9]{2}', title)
+            else:
+                m_date = re.search('(?P<ura_date>[0-1][0-9][0-3][0-9][0-2][0-9])_[0-9]{3}', title)
+        except:
+            print(sys.exc_info())
+
+        if m_date:
+            try:
+                sell_date = datetime.strptime(m_date.group('ura_date'), '%m%d%y')
+                str_date = sell_date.strftime('%Y-%m-%d')
+            except:
+                sys.exc_info()
+
+        return str_date
+
     def get_title(self, copy_text: str = '', product_number: str = '', match_maker: data.MakerData = None):
 
         hankaku_kigou = ['/', ':']
@@ -246,7 +268,7 @@ class AutoMakerParser:
         maker.label = site_data.maker
         maker.matchLabel = site_data.maker
         maker.matchStr = '(' + arr_p_number[0] + '|' + site_data.maker + ')'
-        maker.matchProductNumber = '(\-[0-9]{3,4}|PPV[0-9]{3,4}'
+        maker.matchProductNumber = '(\-[0-9]{3,4}|PPV[0-9]{3,4})'
         maker.replaceWords = 'PPV'
         maker.pNumberGen = 1
         maker.registeredBy = 'AUTO ' + datetime.now().strftime('%Y-%m-%d')
