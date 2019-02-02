@@ -10,8 +10,8 @@ maker_dao = db.maker.MakerDao()
 mgs = site.mgs.Mgs()
 hey = site.hey.Hey()
 fanza = site.fanza.Fanza()
-javs = jav_dao.get_where_agreement('WHERE is_parse2 <= 0 and is_selection = 1 order by id')
-# javs = jav_dao.get_where_agreement('WHERE is_parse2 <= 0 and is_selection = 1 and id <= 17143 order by id limit 50')
+# javs = jav_dao.get_where_agreement('WHERE is_parse2 <= 0 and is_selection = 1 order by id')
+javs = jav_dao.get_where_agreement('WHERE id = 16892 order by id limit 50')
 
 parser = common.AutoMakerParser()
 
@@ -123,8 +123,9 @@ for jav in javs:
                 err_list.append('    FANZAには存在しない')
             else:
                 err_list.append('    FANZA 【' + site_data.streamDate + '】')
-                # if not is_checked:
-                # jav_dao.update_maker_label(site_data.maker, site_data.label, jav.id)
+                if not is_checked:
+                    if len(jav.maker) <= 0:
+                        jav_dao.update_maker_label(site_data.maker, site_data.label, jav.id)
 
         if len(jav.productNumber) <= 0:
             err_list.append('  add p_number [' + p_number + ']')

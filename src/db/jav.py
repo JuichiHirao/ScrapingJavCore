@@ -195,7 +195,7 @@ class JavDao(mysql_base.MysqlBase):
 
     def update_detail_and_sell_date(self, detail: str = '', sell_date: str = '', id: int = 0):
 
-        if len(sell_date) <= 0:
+        if len(sell_date) <= 0 or sell_date == '----':
             sell_date = None
 
         sql = 'UPDATE jav ' \

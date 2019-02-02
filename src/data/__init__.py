@@ -231,6 +231,14 @@ class ReplaceInfoData:
         self.updatedAt = None
 
 
+class SearchResultData:
+
+    def __init__(self):
+
+        self.name = ''
+        self.url = ''
+
+
 class SiteData:
 
     def __init__(self):
@@ -250,7 +258,7 @@ class SiteData:
         self.screenSize = ''
 
     def get_detail(self):
-        return self.streamDate + '、' + self.sellDate + '、' + self.actress + '、' + self.title
+        return self.streamDate + '、' + self.label + '、' + self.actress + '、' + self.title
 
     def get_print_list(self, indent: str = ''):
 

@@ -24,7 +24,7 @@ for jav in javs:
     google.get_info(javs[0].productNumber)
 '''
 
-import_list = import_dao.get_where_agreement('WHERE id > 5100')
+import_list = import_dao.get_where_agreement('WHERE id = 5444')
 for import_data in import_list:
     if '[裏' in import_data.filename:
         print('URA not target')

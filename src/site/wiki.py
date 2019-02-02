@@ -9,7 +9,7 @@ from .. import data
 class Google:
 
     def __init__(self, max_result: int = 5):
-        self.main_url = 'https://www.google.com/search?q=wiki+'
+        self.main_url = 'https://www.google.com/search?q=wiki+av+'
         self.opener = urllib.request.build_opener()
         self.opener.addheaders = [('User-Agent',
                                    'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1941.0 Safari/537.36')]

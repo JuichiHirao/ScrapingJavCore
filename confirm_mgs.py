@@ -8,9 +8,10 @@ mgs = site.mgs.Mgs()
 # javs = jav_dao.get_where_agreement('WHERE id = 13715') # 326SPOR-002
 # javs = jav_dao.get_where_agreement('WHERE id = 13711') # 348NTR-001
 # javs = jav_dao.get_where_agreement('WHERE id = 13918') # 326EVA-007
-javs = jav_dao.get_where_agreement('WHERE id = 13917') # 326SPOR-001
+javs = jav_dao.get_where_agreement('WHERE id = 15334') # 326SPOR-001
 site_data = mgs.get_info(javs[0].productNumber)
 site_data.print('        ')
+print('detail ' + site_data.get_detail())
 
 parser = common.AutoMakerParser()
 maker = parser.get_maker_from_site(site_data, 'MGS')
