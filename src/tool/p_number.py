@@ -49,7 +49,7 @@ class ProductNumber:
         match = re.search('[0-9A-Za-z]*-[0-9A-Za-z]*', title)
 
         if match:
-            return match.group()
+            return match.group().upper()
 
         return ''
 
@@ -109,7 +109,7 @@ class ProductNumber:
         ng_reason = 0
 
         if len(maker_name.strip()) <= 0:
-            return result_maker, 0
+            return '', result_maker, 0
 
         # jav.makerで検索
         find_filter_maker = filter(lambda maker: len(maker.matchName) > 0 and re.match(maker.matchName, maker_name),
@@ -120,7 +120,7 @@ class ProductNumber:
             self.__log_print('javのメーカ名：ラベル名【' + maker_name + ':' + label_name + '】'
                              'に一致するメーカーは存在しません ' + title)
             ng_reason = -1
-            return result_maker, ng_reason
+            return '', result_maker, ng_reason
 
         if len(find_list_maker) == 1:
             match_maker = find_list_maker[0]
@@ -130,11 +130,13 @@ class ProductNumber:
                 ng_reason = 1
                 result_maker = match_maker
                 self.__log_print('OK メーカー完全一致と、タイトル内に製品番号一致 [' + maker_name + ']' + title)
+                p_number = self.get_maker_match_number(match_maker, title)
             else:
                 ng_reason = -2
                 self.__log_print('NG メーカー完全一致だが、タイトル内に製品番号が一致しない [' + maker_name + ']' + title)
+                p_number = self.__get_p_number(title)
 
-            return result_maker, ng_reason
+            return p_number, result_maker, ng_reason
 
         # jav.makerが複数件一致した場合はさらに掘り下げる
 
@@ -145,15 +147,17 @@ class ProductNumber:
         if len(find_list_label) <= 0:
             self.__log_print('NG メーカー一致が複数件、match_strに一致するmaker無し [' + maker_name + ':' + label_name + ']' + title)
             ng_reason = -3
+            p_number = self.__get_p_number(title)
 
-            return result_maker, ng_reason
+            return p_number, result_maker, ng_reason
 
         if len(find_list_label) == 1:
             result_maker = find_list_label[0]
             ng_reason = 2
             self.__log_print('OK メーカーと、タイトル内に製品番号一つだけ一致 [' + maker_name + ':' + label_name + ']' + title)
+            p_number = self.get_maker_match_number(result_maker, title)
 
-            return result_maker, ng_reason
+            return p_number, result_maker, ng_reason
 
         # match_strのチェックが終了して、複数件の場合、レーベル名をチェック
         if len(label_name) <= 0:
@@ -167,21 +171,24 @@ class ProductNumber:
             ng_reason = -4
             self.__log_print('NG メーカー一致が複数件、match_strに複数件、レーベル名に一致するmaker無し ['
                              + maker_name + ':' + label_name + ']' + title)
+            p_number = self.get_maker_match_number(result_maker, title)
 
-            return result_maker, ng_reason
+            return p_number, result_maker, ng_reason
 
         if len(find_list_label) == 1:
             result_maker = find_list_label[0]
             ng_reason = 3
             self.__log_print('OK メーカーと、タイトル内に製品番号複数一致 & label一致 [' + maker_name + ':' + label_name + ']' + title)
+            p_number = self.get_maker_match_number(result_maker, title)
 
-            return result_maker, ng_reason
+            return p_number, result_maker, ng_reason
 
         # labelにも複数一致した場合
         ng_reason = -5
         self.__log_print('NG メーカー・レーベルのどちらにも複数一致 name [' + maker_name + '] label [' + label_name + ']' + title)
+        p_number = self.__get_p_number(result_maker, title)
 
-        return result_maker, ng_reason
+        return p_number, result_maker, ng_reason
 
     # Javに、メーカー名、レーベルが存在しない場合
     # OK
@@ -201,7 +208,7 @@ class ProductNumber:
         if len(find_list_maker) <= 0:
             self.__log_print('INFO タイトルからmatchProductNumberに一致するメーカー無し [' + title + ']')
 
-            return result_maker, ng_reason
+            return '', result_maker, ng_reason
 
         if len(find_list_maker) == 1:
             result_maker = find_list_maker[0]
@@ -209,13 +216,15 @@ class ProductNumber:
             self.__log_print(
                 'OK matchProductNumberに1件だけ一致 '
                 '[' + result_maker.matchStr + '] [' + result_maker.matchProductNumber + '] ' + title)
+            p_number = self.get_maker_match_number(result_maker, title)
 
-            return result_maker, ng_reason
+            return p_number, result_maker, ng_reason
 
         self.__log_print('NG タイトルからmatchProductNumberに複数一致 [' + title + ']')
         ng_reason = -11
+        p_number = self.get_maker_match_number(find_list_maker[0], title)
 
-        return result_maker, ng_reason
+        return p_number, result_maker, ng_reason
 
     # こいつは最後の砦なので、ng_reasonに0はリターンしない
     # Javに情報がないので、productNumberをタイトル内から取得して、チェック
@@ -240,14 +249,14 @@ class ProductNumber:
                 ng_reason = -21
                 self.__log_print('NG タイトル内の製品番号[' + p_number + ']に一致するメーカー無し ' + title)
 
-                return result_maker, ng_reason
+                return p_number, result_maker, ng_reason
 
             if len(find_list_maker) == 1:
                 result_maker = find_list_maker[0]
                 ng_reason = 21
                 self.__log_print('OK タイトル内の製品番号[' + p_number + ']に1件だけメーカー一致 ' + title)
 
-                return result_maker, ng_reason
+                return p_number, result_maker, ng_reason
 
             ng_reason = -22
             self.__log_print('NG タイトル内の製品番号[' + p_number + ']に複数一致 ' + title)
@@ -256,30 +265,20 @@ class ProductNumber:
             ng_reason = -23
             self.__log_print('NG タイトル内に製品番号【[0-9A-Za-z]*-[0-9A-Za-z]*】の文字列が存在しない [' + title)
 
-        return result_maker, ng_reason
+        return p_number, result_maker, ng_reason
 
     def parse(self, jav: data.JavData, is_check):
 
         edit_label = jav.label.replace('—-', '')
-        match_maker, ng_reason = self.__get_maker_exist_name(jav.maker, edit_label, jav.title)
+        p_number, match_maker, ng_reason = self.__get_maker_exist_name(jav.maker, edit_label, jav.title)
 
         if ng_reason == 0:
-            match_maker, ng_reason = self.__get_maker_not_exist_name(jav.title)
+            p_number, match_maker, ng_reason = self.__get_maker_not_exist_name(jav.title)
 
         if ng_reason == 0:
-            match_maker, ng_reason = self.__get_match_maker_force(jav.title)
-            p_number = self.__get_p_number(jav.title)
+            p_number, match_maker, ng_reason = self.__get_match_maker_force(jav.title)
 
-        '''
-        if ng_reason > 0:
-            if not is_check:
-                self.jav_dao.update_checked_ok(ng_reason, match_maker.id, jav)
-        else:
-            if not is_check:
-                self.jav_dao.update_checked_ok(ng_reason, 0, jav)
-        '''
-
-        return match_maker, ng_reason
+        return p_number, match_maker, ng_reason
 
     def parse_and_fc2(self, jav: data.JavData, is_check):
 
