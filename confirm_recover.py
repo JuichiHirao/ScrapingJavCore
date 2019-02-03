@@ -10,8 +10,8 @@ maker_dao = db.maker.MakerDao()
 mgs = site.mgs.Mgs()
 hey = site.hey.Hey()
 fanza = site.fanza.Fanza()
-# javs = jav_dao.get_where_agreement('WHERE is_parse2 <= 0 and is_selection = 1 order by id')
-javs = jav_dao.get_where_agreement('WHERE id = 16892 order by id limit 50')
+javs = jav_dao.get_where_agreement('WHERE is_parse2 <= 0 and is_selection = 1 order by id')
+# javs = jav_dao.get_where_agreement('WHERE id = 16892 order by id limit 50')
 
 parser = common.AutoMakerParser()
 
@@ -22,10 +22,11 @@ p_tool = tool.p_number.ProductNumber(is_log_print=False)
 err_list = []
 ok_cnt = 0
 ng_cnt = 0
-is_checked = False
+is_checked = True
 for jav in javs:
 
-    match_maker, ng_reason = p_tool.parse(jav, is_checked)
+    p_number, match_maker, ng_reason = p_tool.parse(jav, is_checked)
+    print('p_number [' + p_number + '] ng_reason [' + str(ng_reason) + ']')
 
     if ng_reason > 0:
         p_tool.get_log_print()
@@ -66,7 +67,6 @@ for jav in javs:
                 print(str(err))
 
         #   -21 : タイトル内にpNumberは存在したが、一致するメーカーは存在しない
-        p_number = ''
         if ng_reason == -21:
             hey_p_number, hey_label = p_tool.get_p_number_hey(jav.title)
 
@@ -91,7 +91,6 @@ for jav in javs:
                 p_number = hey_p_number
 
             else:
-                p_number = p_tool.get_maker_match_number(None, jav.title)
                 site_data = mgs.get_info(p_number)
 
                 site_name = 'MGS'
