@@ -1,6 +1,6 @@
 .idea
 /venv
-credentials.yml
+credentials.*yml*
 site_*.yml
 .python-version
 __pyc
