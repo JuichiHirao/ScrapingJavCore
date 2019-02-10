@@ -11,7 +11,7 @@ mgs = site.mgs.Mgs()
 hey = site.hey.Hey()
 fanza = site.fanza.Fanza()
 javs = jav_dao.get_where_agreement('WHERE is_parse2 <= 0 and is_selection = 1 order by id')
-# javs = jav_dao.get_where_agreement('WHERE id = 16892 order by id limit 50')
+# javs = jav_dao.get_where_agreement('WHERE id = 16997 order by id limit 50')
 
 parser = common.AutoMakerParser()
 

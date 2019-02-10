@@ -9,7 +9,7 @@ from .. import data
 class Fanza:
 
     def __init__(self):
-        self.main_url = 'https://www.google.com/search?q=fanza+'
+        self.main_url = 'https://www.google.com/search?q=fanza+av+'
         self.opener = urllib.request.build_opener()
         self.opener.addheaders = [('User-Agent',
                                    'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1941.0 Safari/537.36')]

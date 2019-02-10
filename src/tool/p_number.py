@@ -88,7 +88,7 @@ class ProductNumber:
             if match:
                 p_number = match.group().upper()
             else:
-                raise Exception('matchするp_numberがないよー')
+                raise Exception('matchStr[' + match_maker.matchStr + '] するp_numberがないよー [' + title + ']')
 
         return p_number
 
@@ -103,6 +103,7 @@ class ProductNumber:
     #   -3 : メーカー一致が複数件、match_strに一致するmaker無し
     #   -4 : メーカー一致が複数件、match_strに複数件、レーベルに一致するmaker無し
     #   -5 : メーカー・レーベルのどちらにも複数一致
+    #   -6 : -2の中、メーカー名1件だけ完全一致したが、match_strの文字列がtitleにない（Exception発生）
     def __get_maker_exist_name(self, maker_name: str = '', label_name: str = '', title: str = ''):
 
         result_maker = None
@@ -130,7 +131,14 @@ class ProductNumber:
                 ng_reason = 1
                 result_maker = match_maker
                 self.__log_print('OK メーカー完全一致と、タイトル内に製品番号一致 [' + maker_name + ']' + title)
-                p_number = self.get_maker_match_number(match_maker, title)
+                try:
+                    p_number = self.get_maker_match_number(match_maker, title)
+                except Exception as err:
+                    # print('Exception jav maker [' + maker_name + '] label [' + label_name + '] title [' + title + ']' + str(err))
+                    ng_reason = -6
+                    self.__log_print('NG メーカー完全一致だが、タイトル内に製品番号が一致しない [' + maker_name + ']' + title)
+                    p_number = self.__get_p_number(title)
+
             else:
                 ng_reason = -2
                 self.__log_print('NG メーカー完全一致だが、タイトル内に製品番号が一致しない [' + maker_name + ']' + title)
