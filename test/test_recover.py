@@ -45,7 +45,7 @@ class TestRecover(unittest.TestCase):
         jav.title = 'MYAB-004 TESTTESTTES'
         jav.productNumber = 'MYAB-004'
         jav.maker = 'Maker Name'
-        new_maker = self.recover.get_ng_new_maker('MYAB-004', -1, jav)
+        new_maker, site_data = self.recover.get_ng_new_maker('MYAB-004', -1, jav)
 
         self.assertEqual('Maker Name', new_maker.name)
 
@@ -92,7 +92,7 @@ class TestRecover(unittest.TestCase):
 
         jav.title = '326MEM-009 RURU'
         jav.productNumber = '326MEM-009'
-        new_maker = self.recover.get_ng_new_maker('326MEM-009', -21, jav)
+        new_maker, site_data = self.recover.get_ng_new_maker('326MEM-009', -21, jav)
         new_maker.print('NEW ')
 
         self.assertEqual('MGS', new_maker.name)
@@ -105,7 +105,7 @@ class TestRecover(unittest.TestCase):
 
         jav.title = 'DACV-085 40NIN 8ZIKAN'
         jav.productNumber = 'DACV-085'
-        new_maker = self.recover.get_ng_new_maker('DACV-085', -21, jav)
+        new_maker, site_data = self.recover.get_ng_new_maker('DACV-085', -21, jav)
         new_maker.print('NEW ')
 
         self.assertEqual('センタービレッジ', new_maker.name)
@@ -120,7 +120,7 @@ class TestRecover(unittest.TestCase):
         jav.productNumber = 'TITG-014'
 
         with self.assertRaises(tool.recover.RecoverError) as cm:
-            new_maker = self.recover.get_ng_new_maker('TITG-014', -21, jav)
+            new_maker, site_data = self.recover.get_ng_new_maker('TITG-014', -21, jav)
             new_maker.print('NEW ')
 
         self.assertEqual(cm.exception.args[0], 'new_makerのmatch_strは既にscraping.makerに存在')

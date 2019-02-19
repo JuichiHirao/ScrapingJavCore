@@ -13,7 +13,8 @@ class RecoverError(Exception):
 
 class Recover:
 
-    def __init__(self, is_log_print: bool = True, is_dry_run: bool = True, makers: list = None):
+    def __init__(self, site_collect: site.SiteInfoCollect = None, is_log_print: bool = True, is_dry_run: bool = True,
+                 makers: list = None):
         self.p_tool = tool.p_number.ProductNumber(is_log_print=False)
         self.makers = []
 
@@ -30,10 +31,11 @@ class Recover:
             self.makers = makers
 
         self.parser = common.AutoMakerParser()
-        self.fanza = site.fanza.Fanza()
-        self.fc2 = site.fc2.Fc2()
-        self.hey = site.hey.Hey()
-        self.mgs = site.mgs.Mgs()
+        if site_collect is None:
+            self.site_collect = site.SiteInfoCollect()
+            self.site_collect.initialize()
+        else:
+            self.site_collect = site_collect
 
         self.filter_makers = list(filter(lambda maker:
                                          len(maker.matchProductNumber.strip()) > 0
@@ -79,6 +81,7 @@ class Recover:
         """
 
         new_maker = None
+        site_data = None
 
         # -1 : メーカー名に一致するmaker無し
         # -3 : メーカー一致が複数件、match_strに一致するmaker無し
@@ -111,7 +114,7 @@ class Recover:
             if len(hey_p_number) > 0:
 
                 self.err_list.append('      [' + hey_p_number + '] 【' + hey_label + '】')
-                site_data = self.hey.get_info(hey_p_number)
+                site_data = self.site_collect.hey.get_info(hey_p_number)
                 if site_data is None or len(site_data.maker) <= 0:
                     self.err_list.append('      HEYのp_number[ ' + hey_p_number + ']だが、HEYのサイトには存在しない ' + jav.title)
                     raise RecoverError('-21でHEYのサイトで詳細が存在しないため発生')
@@ -128,12 +131,12 @@ class Recover:
                 new_maker = self.parser.get_maker_hey(hey_p_number, site_data)
 
             else:
-                site_data = self.mgs.get_info(jav.productNumber)
+                site_data = self.site_collect.mgs.get_info(jav.productNumber)
 
                 site_name = 'MGS'
                 if site_data is None or len(site_data.productNumber) <= 0:
                     self.err_list.append('      MGSには存在しない ' + jav.title)
-                    site_data = self.fanza.get_info(p_number)
+                    site_data = self.site_collect.fanza.get_info(p_number)
                     if site_data is None:
                         self.err_list.append('    FANZAにも存在しない')
                         raise RecoverError('-21でFANZAのサイトには未存在で発生')
@@ -149,7 +152,7 @@ class Recover:
         # maker、labelを更新
         # -22 : タイトル内にpNumberは存在、複数件のメーカーが一致
         if ng_reason == -22:
-            site_data = self.fanza.get_info(p_number)
+            site_data = self.site_collect.fanza.get_info(p_number)
             if site_data is None:
                 self.err_list.append('    FANZAには存在しない')
             else:
@@ -178,5 +181,5 @@ class Recover:
             if self.is_not_dry_run():
                 self.maker_dao.export(new_maker)
         '''
-        return new_maker
+        return new_maker, site_data
 

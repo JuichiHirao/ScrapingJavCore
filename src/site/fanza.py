@@ -1,5 +1,7 @@
 import re
 import urllib.request
+import urllib.error
+import urllib.parse
 from bs4 import BeautifulSoup
 from .. import common
 from .. import db
@@ -9,7 +11,8 @@ from .. import data
 class Fanza:
 
     def __init__(self):
-        self.main_url = 'https://www.google.com/search?q=fanza+av+'
+        self.main_url = 'https://www.google.com/search?q='
+        self.url_suffix = '+fanza+av'
         self.opener = urllib.request.build_opener()
         self.opener.addheaders = [('User-Agent',
                                    'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1941.0 Safari/537.36')]
@@ -21,26 +24,75 @@ class Fanza:
     def get_info(self, product_number):
 
         site_data = None
-        url = self.main_url + product_number
+        url = self.main_url + product_number + self.url_suffix
 
         urllib.request.install_opener(self.opener)
 
-        with urllib.request.urlopen(url) as response:
-            html = response.read()
-            google_result_soup = BeautifulSoup(html, "html.parser")
-            div_r_list = google_result_soup.findAll('div', class_='r')
+        try:
+            with urllib.request.urlopen(url) as response:
+                html = response.read()
+                google_result_soup = BeautifulSoup(html, "html.parser")
+                div_r_list = google_result_soup.findAll('div', class_='r')
 
-            for idx, div_r in enumerate(div_r_list):
-                a_div_r = div_r.find('a')
-                url = a_div_r['href']
+                for idx, div_r in enumerate(div_r_list):
+                    a_div_r = div_r.find('a')
+                    url = a_div_r['href']
 
-                print('FANZA ' + product_number + ' ' + url)
-                if 'www.dmm.co.jp' in url and '/detail/' in url:
-                    site_data = self.__parse_site_data(url)
-                    break
+                    # print('FANZA ' + product_number + ' ' + url)
+                    if 'www.dmm.co.jp' in url and '/detail/' in url:
+                        site_data = self.__parse_site_data(url)
+                        break
 
-                if idx > 3:
-                    break
+                    if idx > 3:
+                        break
+
+        except AttributeError as aerr:
+            print(str(aerr))
+            print('error [' + url + ']')
+
+        except urllib.error.URLError as uerr:
+            print(str(uerr))
+            print('error [' + url + ']')
+
+        return site_data
+
+    def get_info_from_title(self, title: str = ''):
+
+        site_data = None
+
+        if title is None:
+            return site_data
+
+        url = self.main_url + urllib.parse.quote_plus(title, encoding='utf-8') + self.url_suffix
+        print(url)
+
+        urllib.request.install_opener(self.opener)
+
+        try:
+            with urllib.request.urlopen(url) as response:
+                html = response.read()
+                google_result_soup = BeautifulSoup(html, "html.parser")
+                div_r_list = google_result_soup.findAll('div', class_='r')
+
+                for idx, div_r in enumerate(div_r_list):
+                    a_div_r = div_r.find('a')
+                    url = a_div_r['href']
+
+                    print('FANZA title ' + title + ' ' + url)
+                    if 'www.dmm.co.jp' in url and '/detail/' in url:
+                        site_data = self.__parse_site_data(url)
+                        break
+
+                    if idx > 3:
+                        break
+
+        except AttributeError as aerr:
+            print(str(aerr))
+            print('error [' + url + ']')
+
+        except urllib.error.URLError as uerr:
+            print(str(uerr))
+            print('error [' + url + ']')
 
         return site_data
 

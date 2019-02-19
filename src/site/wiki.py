@@ -6,6 +6,25 @@ from .. import common
 from .. import data
 
 
+class Site:
+
+    def __init__(self):
+        self.main_url = 'https://www.google.com/search?q=wiki+av+'
+        self.site_list = []
+        self.site_list.append(data.SiteInfoData('S-CUTE 600', '', 'http://sougouwiki.com/d/S-Cute%20Girls%206'))
+
+    def get_info(self, maker: data.MakerData() = None):
+
+        if maker.name == 'SITE':
+            site_info_list = list(filter(lambda site_info:
+                                  maker.label in site_info.name, self.site_list))
+
+            if len(site_info_list) > 0:
+                return site_info_list[0].name, site_info_list[0].url
+
+        return '', ''
+
+
 class Google:
 
     def __init__(self, max_result: int = 5):
@@ -167,7 +186,7 @@ class SougouWiki:
                     a = wiki.find('a')
                     # print(str(idx), str(a))
                     url = a['href']
-                    wiki_list.append(a.text + ' ' + url)
+                    wiki_list.append(a.text.replace(' ', '_') + ' ' + url)
                     # print(a.text + ' ' + url)
 
                 result_search = '\n'.join(wiki_list)
