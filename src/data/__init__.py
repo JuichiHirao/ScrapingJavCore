@@ -216,6 +216,7 @@ class ImportData:
         self.postDate = None
         self.rating = 0
         self.size = 0
+        self.javId = 0
 
 
 class SiteInfoData:
