@@ -114,7 +114,7 @@ class CopyText:
         zenkaku = ['１', '２', '３', '４', '５', '６', '７', '８', '９', '０', '　']
         movie_kind = ''
 
-        match_search = re.search('[\[]*FHD[\]]*', copy_text)
+        match_search = re.search('[\[]*FHD[\]]*|[\[]*FHD6M[\]]*', copy_text)
         if match_search:
             movie_kind = ' FHD'
             copy_text = copy_text.replace(match_search.group(), '')

@@ -2,13 +2,15 @@ from src import tool
 from src import db
 from src import common
 from src import site
+from src import data
 
 jav_dao = db.jav.JavDao()
+import_dao = db.import_dao.ImportDao()
 maker_dao = db.maker.MakerDao()
 
-javs = jav_dao.get_where_agreement('WHERE is_selection = 1 and search_result is null order by id')
+# javs = jav_dao.get_where_agreement('WHERE is_selection = 1 and search_result is null order by id')
 # javs = jav_dao.get_where_agreement('WHERE is_parse2 <= 0 and is_selection = 1 order by id')
-# javs = jav_dao.get_where_agreement('WHERE id in (19745, 18496) order by id limit 50')
+javs = jav_dao.get_where_agreement('WHERE id in (17603) order by id limit 50')
 
 site_collect = site.SiteInfoCollect()
 site_collect.initialize()
@@ -27,10 +29,22 @@ err_list = []
 ok_cnt = 0
 ng_cnt = 0
 is_checked = False
+is_import = True
 for jav in javs:
 
     p_number, match_maker, ng_reason = p_tool.parse(jav, is_checked)
     print('p_number [' + p_number + '] ng_reason [' + str(ng_reason) + ']')
+
+    import_data = data.ImportData()
+    if is_import:
+        import_list = import_dao.get_where_agreement('WHERE jav_id = ' + str(jav.id))
+        if import_list is None:
+            print('import data nothing jav_id [' + str(jav.id) + ']')
+        else:
+            import_data = import_list[0]
+            print('import id [' + str(import_data.id) + ']')
+            if not is_checked:
+                import_dao.update_p_number_info(import_data.id, p_number, match_maker)
 
     if ng_reason > 0:
         # p_tool.get_log_print()
@@ -43,18 +57,29 @@ for jav in javs:
 
         site_data = site_getter.get_info(jav, match_maker)
 
+        result_search = ''
         if site_data is None:
             err_list.append('id [' + str(jav.id) + '] site_data is None 【' + jav.title + '】')
+
+            if match_maker.name == 'SITE':
+                result_search = site_getter.get_wiki(jav, match_maker)
         else:
             detail = site_data.get_detail()
             if not is_checked:
                 jav_dao.update_detail_and_sell_date(detail, site_data.streamDate, jav.id)
+                if is_import and import_data.id > 0:
+                    import_dao.update_detail_and_sell_date(detail, site_data.streamDate, import_data.id)
             # site_data = data.SiteData()
             print('site found [' + detail + ']')
             result_search = site_getter.get_wiki(jav, match_maker)
             print('result_search [' + result_search + ']')
             if not is_checked:
                 jav_dao.update_search_result(result_search.strip(), jav.id)
+
+        if is_import and import_data.id > 0:
+            if not is_checked:
+                import_list = import_dao.update_search_result(result_search.strip(), import_data.id)
+            print('import result search [' + result_search + ']')
 
     else:
         try:
