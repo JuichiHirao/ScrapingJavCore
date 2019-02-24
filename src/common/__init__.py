@@ -40,20 +40,24 @@ class Environment:
     def get_driver(self):
         return self.driver
 
+    def get_register_path(self):
+        return self.register_path
+
     def get_image_path(self):
         return self.imagePath
 
     def __set_windows(self):
 
-        driver_path = 'c:\\SHARE\\chromedriver.exe'
+        driver_path = 'c:\myapp\chromedriver.exe'
 
         if not os.path.isfile(driver_path):
             raise DriverNotFoundError(driver_path + 'に存在しません')
 
         self.driver = webdriver.Chrome(chrome_options=self.options,
-                                       executable_path='c:\\SHARE\\chromedriver.exe')
+                                       executable_path='c:\\myapp\\chromedriver.exe')
 
-        self.imagePath = "D:\DATA\jav-save"
+        self.imagePath = "C:\mydata\jav-save"
+        self.register_path = "D:\DATA\Downloads"
 
         if not os.path.isdir(self.imagePath):
             raise ImagePathNotFoundError(self.imagePath + 'に存在しません')

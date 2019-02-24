@@ -194,7 +194,7 @@ class ProductNumber:
         # labelにも複数一致した場合
         ng_reason = -5
         self.__log_print('NG メーカー・レーベルのどちらにも複数一致 name [' + maker_name + '] label [' + label_name + ']' + title)
-        p_number = self.__get_p_number(result_maker, title)
+        p_number = self.__get_p_number(title)
 
         return p_number, result_maker, ng_reason
 
