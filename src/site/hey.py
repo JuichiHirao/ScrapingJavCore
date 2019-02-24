@@ -29,26 +29,30 @@ class Hey:
 
             urllib.request.install_opener(self.opener)
 
-            with urllib.request.urlopen(url) as response:
-                html = response.read()
-                html_soup = BeautifulSoup(html, "html.parser")
-                movie_info = html_soup.find('div', id='movie-info')
-                # print(movie_info.text)
-                site_data = data.SiteData()
-                for line in movie_info.text.splitlines():
-                    if re.search('配信日', line):
-                        site_data.streamDate = re.sub('配信日：', '', line).strip()
-                    if re.search('提供元', line):
-                        site_data.maker = re.sub('提供元：|[(（] 公式サイト [)）]', '', line).strip()
-                    if re.search('主演', line):
-                        site_data.actress = re.sub('主演：', '', line).strip()
-                    if re.search('動画再生時間', line):
-                        site_data.duration = re.sub('動画再生時間：', '', line).strip()
-                    if re.search('ファイル容量', line):
-                        site_data.fileSize = re.sub('ファイル容量：', '', line)
-                    if re.search('画面サイズ', line):
-                        site_data.screenSize = re.sub('画面サイズ：', '', line)
-                # site_data.print()
+            try:
+                with urllib.request.urlopen(url) as response:
+                    html = response.read()
+                    html_soup = BeautifulSoup(html, "html.parser")
+                    movie_info = html_soup.find('div', id='movie-info')
+                    # print(movie_info.text)
+                    site_data = data.SiteData()
+                    for line in movie_info.text.splitlines():
+                        if re.search('配信日', line):
+                            site_data.streamDate = re.sub('配信日：', '', line).strip()
+                        if re.search('提供元', line):
+                            site_data.maker = re.sub('提供元：|[(（] 公式サイト [)）]', '', line).strip()
+                        if re.search('主演', line):
+                            site_data.actress = re.sub('主演：', '', line).strip()
+                        if re.search('動画再生時間', line):
+                            site_data.duration = re.sub('動画再生時間：', '', line).strip()
+                        if re.search('ファイル容量', line):
+                            site_data.fileSize = re.sub('ファイル容量：', '', line)
+                        if re.search('画面サイズ', line):
+                            site_data.screenSize = re.sub('画面サイズ：', '', line)
+                    # site_data.print()
+            except urllib.error.HTTPError as err:
+                print('HTTPError [' + str(err.code) + ']')
+
         else:
             print('not found')
 

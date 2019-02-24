@@ -336,6 +336,8 @@ class AutoMakerParser:
                 maker.label = site_data.maker
             maker.siteKind = 2
         else:
+            if site_data.maker == site_data.label:
+                site_data.label = ''
             maker.name = site_data.maker
             maker.matchName = site_data.maker
             maker.label = site_data.label

@@ -216,7 +216,17 @@ class ImportData:
         self.postDate = None
         self.rating = 0
         self.size = 0
+        self.javId = 0
 
+
+class SiteInfoData:
+
+    def __init__(self, name: str = '', matchStr: str = '', url = ''):
+
+        self.id = -1
+        self.name = name
+        self.matchStr = matchStr
+        self.url = url
 
 class ReplaceInfoData:
 
