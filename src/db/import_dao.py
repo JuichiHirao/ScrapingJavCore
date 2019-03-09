@@ -116,6 +116,17 @@ class ImportDao(mysql_base.MysqlBase):
 
         return
 
+    def update_tag(self, tag: str = '', id: int = 0):
+
+        sql = 'UPDATE import ' \
+              '  SET tag = %s ' \
+              '  WHERE id = %s'
+
+        self.cursor.execute(sql, (tag, id))
+        print("import update id [" + str(id) + "] tag")
+
+        self.conn.commit()
+
     def update_search_result(self, search_result: str = '', id: int = 0):
 
         sql = 'UPDATE import ' \

@@ -171,8 +171,15 @@ class ProductNumber:
         if len(label_name) <= 0:
             find_filter_label = filter(lambda maker: len(maker.label) == 0, find_list_label)
         else:
-            find_filter_label = filter(lambda maker: re.search(maker.matchLabel, label_name, re.IGNORECASE)
-                                       and len(maker.matchLabel) > 0, find_list_label)
+            try:
+                find_filter_label = filter(lambda maker: re.search(maker.matchLabel, label_name, re.IGNORECASE)
+                                           and len(maker.matchLabel) > 0, find_list_label)
+            except TypeError as terr:
+                print('TypeError 発生')
+                print('label_name [' + label_name + ']')
+                print('matchLabel')
+                print(str(find_list_label))
+                raise terr
 
         find_list_label = list(find_filter_label)
         if len(find_list_label) <= 0:

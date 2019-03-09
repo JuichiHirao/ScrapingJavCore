@@ -78,6 +78,18 @@ class TestCopyText(unittest.TestCase):
                                      , 'ki181021', match_maker)
         self.assertEqual(expected, actual)
 
+    def test_FHD6m(self):
+        match_maker = data.MakerData()
+        match_maker.matchName = 'S1 NO.1 STYLE'
+        match_maker.matchStr = 'SSNI'
+        match_maker.matchProductNumber = ''
+
+        copy_text = common.CopyText()
+        actual = copy_text.get_title('[FHD6m]ssni-391 隣に住む引きこもりの幼馴染に私、毎日アニコスを着させられて… 夢乃あいか',
+                                     'SSNI-391', match_maker)
+        expected = '隣に住む引きこもりの幼馴染に私、毎日アニコスを着させられて… 夢乃あいか FHD'
+        self.assertEqual(expected, actual)
+
     # jav.titleがmaker.match_strに存在しない場合
     def test_nomatch_maker(self):
         jav_data = data.JavData()
