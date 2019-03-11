@@ -168,12 +168,14 @@ class ProductNumber:
             return p_number, result_maker, ng_reason
 
         # match_strのチェックが終了して、複数件の場合、レーベル名をチェック
-        if len(label_name) <= 0:
-            find_filter_label = filter(lambda maker: len(maker.label) == 0, find_list_label)
         else:
             try:
-                find_filter_label = filter(lambda maker: re.search(maker.matchLabel, label_name, re.IGNORECASE)
-                                           and len(maker.matchLabel) > 0, find_list_label)
+                if len(label_name) <= 0:
+                    find_filter_label = filter(lambda maker: len(maker.label) == 0, find_list_label)
+                else:
+                    find_filter_label = filter(lambda maker: re.search(maker.matchLabel, label_name, re.IGNORECASE)
+                                               and len(maker.matchLabel) > 0, find_list_label)
+                find_list_label = list(find_filter_label)
             except TypeError as terr:
                 print('TypeError 発生')
                 print('label_name [' + label_name + ']')
@@ -181,7 +183,6 @@ class ProductNumber:
                 print(str(find_list_label))
                 raise terr
 
-        find_list_label = list(find_filter_label)
         if len(find_list_label) <= 0:
             ng_reason = -4
             self.__log_print('NG メーカー一致が複数件、match_strに複数件、レーベル名に一致するmaker無し ['
