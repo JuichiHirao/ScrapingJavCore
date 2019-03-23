@@ -280,6 +280,43 @@ class AutoMakerParser:
 
         return maker
 
+    def get_maker_no_check(self, jav: data.JavData()):
+
+        m_p = re.search('[A-Z0-9]{2,5}-[A-Z0-9]{2,4}', jav.title, re.IGNORECASE)
+
+        jav_name = jav.maker.replace('/', '／')
+        jav_label = jav.label.replace('—-', '').replace('/', '／')
+
+        if m_p:
+            p_number = m_p.group()
+            match_str = p_number.split('-')[0]
+        else:
+            err_msg = '[' + str(jav.id) \
+                      + '] 対象のmatch_strが存在しません [A-Z0-9]{3,5}-[A-Z0-9]{3,4}の正規表現と一致しません' \
+                      + jav.title
+            raise MatchStrNotFoundError(err_msg)
+
+        if len(match_str) > 0:
+            where = 'WHERE name = %s and label = %s '
+            exist_maker = self.maker_dao.get_where_agreement(where, (jav_name, jav_label))
+            if exist_maker:
+                err_msg = '[' + str(jav.id) + '] 発見!! [' + jav_name + ' ' + jav_label + ']'
+                # exist_maker.print()
+                raise MatchStrSameError(err_msg)
+
+        maker = data.MakerData()
+        maker.kind = 1
+        maker.matchStr = match_str.upper()
+        maker.matchLabel = jav_label
+        maker.registeredBy = 'AUTO ' + datetime.now().strftime('%Y-%m-%d')
+
+        maker.matchName = self.apply_replace_info(jav_name, ('maker_m_name',))
+        maker.name = self.apply_replace_info(jav_name, ('maker_name',))
+        maker.label = self.apply_replace_info(jav_label, ('maker_label',))
+        maker.matchLabel = self.apply_replace_info(jav_label, ('maker_m_label',))
+
+        return maker
+
     def get_maker(self, jav: data.JavData()):
 
         m_p = re.search('[A-Z0-9]{2,5}-[A-Z0-9]{2,4}', jav.title, re.IGNORECASE)

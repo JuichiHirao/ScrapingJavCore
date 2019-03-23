@@ -44,7 +44,7 @@ class ImportDao(mysql_base.MysqlBase):
               '  , rar_flag, tag, filename, hd_kind ' \
               '  , movie_file_id, split_flag, name_only_flag, jav_post_date ' \
               '  , package, thumbnail, download_files, search_result ' \
-              '  , detail, jav_url, rating, `size` ' \
+              '  , detail, jav_url, rating, `size`, jav_id ' \
               '  , created_at, updated_at ' \
               '  FROM import '
 
@@ -81,8 +81,9 @@ class ImportDao(mysql_base.MysqlBase):
             import_data.url = row[22]
             import_data.rating = row[23]
             import_data.size = row[24]
-            import_data.createdAt = row[25]
-            import_data.updatedAt = row[26]
+            import_data.javId = row[25]
+            import_data.createdAt = row[26]
+            import_data.updatedAt = row[27]
             import_list.append(import_data)
 
         return import_list
@@ -161,6 +162,18 @@ class ImportDao(mysql_base.MysqlBase):
 
         self.cursor.execute(sql, (match_maker.kind, match_maker.matchProductNumber, product_number, match_maker.get_maker(''), id))
         print("import update id [" + str(id) + "] p_number_info")
+
+        self.conn.commit()
+
+    def update_maker_and_filename(self, id: int = 0, maker: str = '', filename: str = ''):
+
+        sql = 'UPDATE import ' \
+              '  SET filename = %s ' \
+              '   , maker = %s ' \
+              '  WHERE id = %s '
+
+        self.cursor.execute(sql, (filename, maker, id))
+        print("import update id [" + str(id) + "] maker filename")
 
         self.conn.commit()
 

@@ -83,6 +83,16 @@ class Recover:
         new_maker = None
         site_data = None
 
+        if 'AVOP-' in jav.productNumber.upper():
+            try:
+                new_maker = self.parser.get_maker_no_check(jav)
+                # self.p_tool.append_maker(new_maker)
+            except common.MatchStrSameError as err:
+                self.err_list.append('MatchStrがscraping.makerに既に存在' + str(err))
+                raise RecoverError('-1から-3でMatchStrSameError発生')
+
+            return new_maker, site_data
+
         # -1 : メーカー名に一致するmaker無し
         # -3 : メーカー一致が複数件、match_strに一致するmaker無し
         #   メーカーに登録
