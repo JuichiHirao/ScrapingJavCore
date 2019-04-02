@@ -117,6 +117,44 @@ class ImportDao(mysql_base.MysqlBase):
 
         return
 
+    def update(self, import_data: data.ImportData):
+
+        sql = 'UPDATE import ' \
+              'set copy_text = %s, jav_post_date = %s ' \
+              '  , kind = %s, match_product = %s' \
+              '  , product_number = %s, sell_date = %s ' \
+              '  , maker = %s, title = %s' \
+              '  , actresses = %s, rar_flag = %s ' \
+              '  , tag = %s, filename = %s ' \
+              '  , hd_kind = %s, movie_file_id = %s ' \
+              '  , split_flag = %s, name_only_flag = %s ' \
+              '  , package = %s, thumbnail = %s ' \
+              '  , download_files = %s, jav_url = %s' \
+              '  , rating = %s, size = %s ' \
+              '  , search_result = %s, detail = %s ' \
+              '  , jav_id = %s ' \
+              '  WHERE id = %s'
+
+        self.cursor.execute(sql, (import_data.copy_text, import_data.postDate
+                            , import_data.kind, import_data.matchStr
+                            , import_data.productNumber, import_data.sellDate
+                            , import_data.maker, import_data.title
+                            , import_data.actress, import_data.isRar
+                            , import_data.tag, import_data.filename
+                            , import_data.hd_kind, 0
+                            , import_data.isSplit, import_data.isNameOnly
+                            , import_data.package, import_data.thumbnail
+                            , import_data.downloadFiles, import_data.url
+                            , import_data.rating, import_data.size
+                            , import_data.searchResult, import_data.detail
+                            , import_data.javId
+                            , import_data.id))
+
+        self.conn.commit()
+        print("import update id [" + str(id) + "] all ")
+
+        return
+
     def update_tag(self, tag: str = '', id: int = 0):
 
         sql = 'UPDATE import ' \

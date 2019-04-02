@@ -86,20 +86,27 @@ class CopyText:
 
     def get_date_ura(self, title: str = ''):
 
+        date_format = ''
         str_date = ''
         try:
             if 'カリビアン' in title:
                 m_date = re.search('(?P<ura_date>[0-1][0-9][0-3][0-9][0-2][0-9])[_-][0-9]{3,4}', title)
+                date_format = '%m%d%y'
             elif '天然むすめ' in title:
                 m_date = re.search('(?P<ura_date>[0-1][0-9][0-3][0-9][0-2][0-9])_[0-9]{2}', title)
+                date_format = '%m%d%y'
             else:
                 m_date = re.search('(?P<ura_date>[0-1][0-9][0-3][0-9][0-2][0-9])_[0-9]{3}', title)
+                date_format = '%m%d%y'
+                if not m_date:
+                    m_date = re.search('ki(?P<ura_date>[0-2][0-9][0-1][0-9][0-3][0-9])', title)
+                    date_format = '%y%m%d'
         except:
             print(sys.exc_info())
 
         if m_date:
             try:
-                sell_date = datetime.strptime(m_date.group('ura_date'), '%m%d%y')
+                sell_date = datetime.strptime(m_date.group('ura_date'), date_format)
                 str_date = sell_date.strftime('%Y-%m-%d')
             except:
                 sys.exc_info()
@@ -134,6 +141,11 @@ class CopyText:
             match_maker_str = re.search(match_maker.matchStr, title)
             if match_maker_str:
                 title = title.replace(match_maker_str.group(), '')
+
+            if match_maker.matchLabel is not None and len(match_maker.matchLabel) > 0:
+                match_maker_label = re.search(match_maker.matchLabel, title)
+                if match_maker_label:
+                    title = title.replace(match_maker_label.group(), '')
 
         edit_copytext = title
         for idx, char in enumerate(zenkaku):

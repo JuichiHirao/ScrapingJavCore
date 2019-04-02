@@ -71,6 +71,12 @@ class SiteInfoGetter:
                 title = self.site_collect.copy_text.get_title(jav.title, jav.productNumber, match_maker)
                 site_data = self.site_collect.fanza.get_info_from_title(title)
 
+        if site_data is None and match_maker.kind == 3:
+            stream_date = self.site_collect.copy_text.get_date_ura(jav.title)
+            if len(stream_date) > 0:
+                site_data = data.SiteData()
+                site_data.streamDate = stream_date
+
         return site_data
 
     def get_wiki(self, jav: data.JavData = None, match_maker: data.MakerData = None):

@@ -26,6 +26,7 @@ class Fanza:
         site_data = None
         url = self.main_url + product_number + self.url_suffix
 
+        arr_p_number = product_number.split('-')
         urllib.request.install_opener(self.opener)
 
         try:
@@ -37,6 +38,14 @@ class Fanza:
                 for idx, div_r in enumerate(div_r_list):
                     a_div_r = div_r.find('a')
                     url = a_div_r['href']
+
+                    if len(arr_p_number) >= 2:
+                        match_p_number = arr_p_number[0] + '.*' + arr_p_number[1]
+                    else:
+                        match_p_number = product_number
+
+                    if not re.search(match_p_number, url, re.IGNORECASE):
+                        continue
 
                     # print('FANZA ' + product_number + ' ' + url)
                     if 'www.dmm.co.jp' in url and '/detail/' in url:

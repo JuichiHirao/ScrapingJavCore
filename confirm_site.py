@@ -2,6 +2,9 @@ from src import site
 from src import db
 from src import data
 from src import common
+from src import tool
+
+from datetime import datetime
 
 site_collect = site.SiteInfoCollect()
 site_collect.initialize()
@@ -12,9 +15,16 @@ import_dao = db.import_dao.ImportDao()
 jav_dao = db.jav.JavDao()
 maker_dao = db.maker.MakerDao()
 
+p_tool = tool.p_number.ProductNumber()
+copy_text_tool = common.CopyText()
+
 makers = maker_dao.get_all()
 
-import_list = import_dao.get_where_agreement('WHERE id = 6630')
+# is_checked = True
+is_checked = False
+
+# import_list = import_dao.get_where_agreement('WHERE id = 6764')
+import_list = import_dao.get_where_agreement('WHERE id = 6786')
 for import_data in import_list:
     javs = jav_dao.get_where_agreement('WHERE id = ' + str(import_data.javId))
 
@@ -31,6 +41,50 @@ for import_data in import_list:
         continue
 
     match_maker = match_makers[0]
+
+    # if match_maker.kind != 1:
+    #     continue
+
+    p_number = p_tool.get_registered_p_number(match_jav, match_maker)
+    if p_number == import_data.productNumber:
+        print('match p_number [' + p_number + '] import [' + import_data.productNumber + '] jav [' + match_jav.productNumber + ']')
+    else:
+        print('change p_number [' + p_number + '] <--- [' + import_data.productNumber + '] jav [' + match_jav.productNumber + ']')
+        if not is_checked:
+            import_dao.update_p_number_info(import_data.id, p_number, match_maker)
+
+    detail = ''
+    # p_number, match_maker, ng_reason = p_tool.parse(match_jav)
+    site_data = site_getter.get_info(match_jav, match_maker)
+    # print(str(match_jav.sellDate))
+    # site_data.print()
+    # site_data = data.SiteData()
+
+    if site_data is not None:
+        detail = site_data.get_detail()
+    else:
+        print('SiteData is None')
+
+    if import_data.detail is not None:
+        import_detail = import_data.detail
+    else:
+        import_detail = ''
+    if import_detail != detail:
+        print('change ' + detail + ' <-- ' + import_detail)
+        import_data.detail = detail
+        # sell_date = datetime.strptime(site_data.streamDate, '%y%m%d%y')
+        # str_date = sell_date.strftime('%Y-%m-%d')
+        import_data.sellDate = site_data.streamDate
+        if not is_checked:
+            jav_dao.update_detail_and_sell_date(detail, site_data.streamDate, import_data.javId)
+            import_dao.update_detail_and_sell_date(site_data.get_detail(), site_data.streamDate, import_data.id)
+
+    import_data.title = copy_text_tool.get_title(match_jav.title, match_jav.productNumber, match_maker)
+    import_data.filename = import_parser.get_filename(import_data)
+    print('filename ' + import_data.filename)
+    if not is_checked:
+        import_dao.update(import_data)
+        # import_dao.update_maker_and_filename(import_data.id, import_data.maker, import_data.filename)
 
     # maker_id 835 FC2
     if match_jav.makersId == 835:
@@ -51,8 +105,8 @@ for import_data in import_list:
                     # filename = site_collect.copy_text.get_title(match_jav.title, match_jav.productNumber, match_makers[0])
                     import_data.filename = import_parser.get_filename(import_data)
                     print('filename ' + import_data.filename)
-                    jav_dao.update_maker_label(match_maker.name, match_jav.label, match_jav.id)
-                    import_dao.update_maker_and_filename(import_data.id, import_data.maker, import_data.filename)
+                    # jav_dao.update_maker_label(match_maker.name, match_jav.label, match_jav.id)
+                    # import_dao.update_maker_and_filename(import_data.id, import_data.maker, import_data.filename)
             else:
                 print('not site_data')
     else:

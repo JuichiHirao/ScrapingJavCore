@@ -40,6 +40,23 @@ class ProductNumber:
 
         return log_list
 
+    def get_registered_p_number(self, jav: data.JavData() = None, match_maker: data.MakerData() = None):
+
+        # jav = data.JavData()
+        if jav is None:
+            return ''
+
+        if match_maker is None:
+            match_maker = data.MakerData()
+
+        if match_maker.name == 'SITE':
+            return jav.productNumber.lower()
+
+        if match_maker.kind == 3:
+            return jav.productNumber.lower()
+
+        return jav.productNumber.upper()
+
     def get_p_number(self, title: str = ''):
 
         return self.__get_p_number(title)

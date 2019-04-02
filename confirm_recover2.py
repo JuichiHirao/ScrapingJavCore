@@ -8,9 +8,10 @@ jav_dao = db.jav.JavDao()
 import_dao = db.import_dao.ImportDao()
 maker_dao = db.maker.MakerDao()
 
+javs = jav_dao.get_where_agreement('WHERE is_selection = 1 order by id')
 # javs = jav_dao.get_where_agreement('WHERE is_selection = 1 and search_result is null order by id')
 # javs = jav_dao.get_where_agreement('WHERE is_parse2 <= 0 and is_selection = 1 order by id')
-javs = jav_dao.get_where_agreement('WHERE id in (17603) order by id limit 50')
+# javs = jav_dao.get_where_agreement('WHERE id in (19816) order by id limit 50')
 
 site_collect = site.SiteInfoCollect()
 site_collect.initialize()
@@ -28,8 +29,8 @@ p_tool = tool.p_number.ProductNumber(is_log_print=False)
 err_list = []
 ok_cnt = 0
 ng_cnt = 0
-is_checked = False
-is_import = True
+is_checked = True
+is_import = False
 for jav in javs:
 
     p_number, match_maker, ng_reason = p_tool.parse(jav, is_checked)
@@ -45,6 +46,11 @@ for jav in javs:
             print('import id [' + str(import_data.id) + ']')
             if not is_checked:
                 import_dao.update_p_number_info(import_data.id, p_number, match_maker)
+
+        # site_data = data.SiteData()
+        # site_data = site_getter.get_info(jav, match_maker)
+        # jav_dao.update_maker_label()
+        # site_data.print()
 
     if ng_reason > 0:
         # p_tool.get_log_print()
