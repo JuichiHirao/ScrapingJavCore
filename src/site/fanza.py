@@ -21,12 +21,12 @@ class Fanza:
         self.driver = self.env.get_driver()
         self.import_dao = db.import_dao.ImportDao()
 
-    def get_info(self, product_number):
+    def get_info(self, p_number):
 
         site_data = None
-        url = self.main_url + product_number + self.url_suffix
+        url = self.main_url + p_number + self.url_suffix
 
-        arr_p_number = product_number.split('-')
+        split_p_number = p_number.split('-')
         urllib.request.install_opener(self.opener)
 
         try:
@@ -39,17 +39,9 @@ class Fanza:
                     a_div_r = div_r.find('a')
                     url = a_div_r['href']
 
-                    if len(arr_p_number) >= 2:
-                        match_p_number = arr_p_number[0] + '.*' + arr_p_number[1]
-                    else:
-                        match_p_number = product_number
+                    site_data = self.__get_and_check_site_data(p_number, split_p_number, url)
 
-                    if not re.search(match_p_number, url, re.IGNORECASE):
-                        continue
-
-                    # print('FANZA ' + product_number + ' ' + url)
-                    if 'www.dmm.co.jp' in url and '/detail/' in url:
-                        site_data = self.__parse_site_data(url)
+                    if site_data is not None:
                         break
 
                     if idx > 3:
@@ -65,15 +57,16 @@ class Fanza:
 
         return site_data
 
-    def get_info_from_title(self, title: str = ''):
+    def get_info_from_title(self, title: str = '', p_number: str = ''):
 
         site_data = None
 
         if title is None:
             return site_data
 
+        split_p_number = p_number.split('-')
         url = self.main_url + urllib.parse.quote_plus(title, encoding='utf-8') + self.url_suffix
-        print(url)
+        # print(url)
 
         urllib.request.install_opener(self.opener)
 
@@ -87,9 +80,9 @@ class Fanza:
                     a_div_r = div_r.find('a')
                     url = a_div_r['href']
 
-                    print('FANZA title ' + title + ' ' + url)
-                    if 'www.dmm.co.jp' in url and '/detail/' in url:
-                        site_data = self.__parse_site_data(url)
+                    site_data = self.__get_and_check_site_data(p_number, split_p_number, url)
+
+                    if site_data is not None:
                         break
 
                     if idx > 3:
@@ -102,6 +95,22 @@ class Fanza:
         except urllib.error.URLError as uerr:
             print(str(uerr))
             print('error [' + url + ']')
+
+        return site_data
+
+    def __get_and_check_site_data(self, p_number: str = '', split_p_number: list = None, url: str = ''):
+        site_data = None
+        if len(split_p_number) >= 2:
+            match_p_number = split_p_number[0] + '.*' + split_p_number[1]
+        else:
+            match_p_number = p_number
+
+        if not re.search(match_p_number, url, re.IGNORECASE):
+            return site_data
+
+        # print('FANZA ' + product_number + ' ' + url)
+        if 'www.dmm.co.jp' in url and '/detail/' in url:
+            site_data = self.__parse_site_data(url)
 
         return site_data
 

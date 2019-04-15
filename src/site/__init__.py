@@ -54,10 +54,13 @@ class SiteInfoGetter:
 
         site_data = None
 
+        if match_maker.name == 'SITE':
+            return site_data
+
         if site_data is None and 'HEY動画' in match_maker.name:
             site_data = self.site_collect.hey.get_info(jav.productNumber)
 
-        if site_data is None and 'MGS' in match_maker.name:
+        if site_data is None and 'MGS' in match_maker.name or match_maker.siteKind == 2:
             site_data = self.site_collect.mgs.get_info(jav.productNumber)
 
         if site_data is None and 'FC2' in match_maker.name:
@@ -69,7 +72,7 @@ class SiteInfoGetter:
 
             if site_data is None:
                 title = self.site_collect.copy_text.get_title(jav.title, jav.productNumber, match_maker)
-                site_data = self.site_collect.fanza.get_info_from_title(title)
+                site_data = self.site_collect.fanza.get_info_from_title(title, jav.productNumber)
 
         if site_data is None and match_maker.kind == 3:
             stream_date = self.site_collect.copy_text.get_date_ura(jav.title)
@@ -85,7 +88,7 @@ class SiteInfoGetter:
             return ''
 
         if match_maker.name == 'SITE':
-            site_name, site_url = self.site_collect.site_wiki.get_info(match_maker)
+            site_name, site_url = self.site_collect.site_wiki.get_info(match_maker, jav.productNumber)
             result_search = site_name + ' ' + site_url
         else:
             if match_maker.siteKind == 3:

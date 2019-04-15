@@ -1,5 +1,6 @@
 import re
 import urllib.request
+from operator import attrgetter
 from bs4 import BeautifulSoup
 from .. import db
 from .. import common
@@ -8,19 +9,37 @@ from .. import data
 
 class Site:
 
-    def __init__(self):
-        self.main_url = 'https://www.google.com/search?q=wiki+av+'
-        self.site_list = []
-        self.site_list.append(data.SiteInfoData('S-CUTE 600', '', 'http://sougouwiki.com/d/S-Cute%20Girls%206'))
+    def __init__(self, site_info_list: list = None):
+        self.site_info_list = []
+        self.site_info_dao = db.site_info.SiteInfoDao()
 
-    def get_info(self, maker: data.MakerData() = None):
+        if site_info_list is None:
+            site_info_list = self.site_info_dao.get_all()
+
+            if site_info_list is not None and len(site_info_list) > 0:
+                self.site_info_list = site_info_list
+        else:
+            self.site_info_list = site_info_list
+
+    def get_info(self, maker: data.MakerData() = None, p_number: str = ''):
 
         if maker.name == 'SITE':
-            site_info_list = list(filter(lambda site_info:
-                                  maker.label in site_info.name, self.site_list))
+            one_site_list = list(filter(lambda site_info:
+                                        re.search(maker.matchStr, site_info.matchStr, re.IGNORECASE), self.site_info_list))
 
-            if len(site_info_list) > 0:
-                return site_info_list[0].name, site_info_list[0].url
+            if len(one_site_list) > 0:
+                if len(one_site_list) == 1:
+                    return one_site_list[0].name, one_site_list[0].url
+
+                sorted(one_site_list, key=attrgetter('nameOrder'))
+
+                for idx, one_site in enumerate(one_site_list):
+                    # one_site = data.SiteInfoData()
+                    if re.search(one_site.targetNumber, p_number, re.IGNORECASE):
+                        return one_site.name, one_site.url
+
+                    if idx + 1 == len(one_site_list):
+                        return one_site.name, one_site.url
 
         return '', ''
 
@@ -56,7 +75,7 @@ class Google:
                 a_div_r = div_r.find('a')
                 url = a_div_r['href']
 
-                print('Google ' + product_number + ' ' + url)
+                print('    Google ' + product_number + ' ' + url)
 
                 if 'shecool.net' in url:
                     site_name = 'shecool.net'

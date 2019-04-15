@@ -221,12 +221,17 @@ class ImportData:
 
 class SiteInfoData:
 
-    def __init__(self, name: str = '', matchStr: str = '', url = ''):
+    def __init__(self, name: str = '', match_str: str = '', url: str = '', target_number: str = ''):
 
         self.id = -1
         self.name = name
-        self.matchStr = matchStr
+        self.matchStr = match_str
+        self.targetNumber = target_number
+        self.nameOrder = 0
         self.url = url
+        self.createdAt = None
+        self.updatedAt = None
+
 
 class ReplaceInfoData:
 

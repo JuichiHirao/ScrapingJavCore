@@ -89,7 +89,7 @@ class Recover:
                 # self.p_tool.append_maker(new_maker)
             except common.MatchStrSameError as err:
                 self.err_list.append('MatchStrがscraping.makerに既に存在' + str(err))
-                raise RecoverError('-1から-3でMatchStrSameError発生')
+                raise RecoverError('[' + str(jav.id) + '] -1から-3でMatchStrSameError発生 ' + jav.title)
 
             return new_maker, site_data
 
@@ -115,7 +115,7 @@ class Recover:
                 # self.p_tool.append_maker(new_maker)
             except common.MatchStrSameError as err:
                 self.err_list.append('MatchStrがscraping.makerに既に存在' + str(err))
-                raise RecoverError('-1から-3でMatchStrSameError発生')
+                raise RecoverError('[' + str(jav.id) + '] -1から-3でMatchStrSameError発生 ' + jav.title)
 
         #   -21 : タイトル内にpNumberは存在したが、一致するメーカーは存在しない
         if ng_reason == -21:
@@ -157,7 +157,7 @@ class Recover:
                     new_maker = self.parser.get_maker_from_site(site_data, site_name)
                 except common.MatchStrNotFoundError as err:
                     self.err_list.append('MatchStrがタイトル内に存在しない' + str(err) + jav.title)
-                    raise RecoverError('-21でMatchStrNotFoundError発生')
+                    raise RecoverError('[' + str(jav.id) + '] -21でMatchStrNotFoundError発生 ' + jav.title)
 
         # maker、labelを更新
         # -22 : タイトル内にpNumberは存在、複数件のメーカーが一致
