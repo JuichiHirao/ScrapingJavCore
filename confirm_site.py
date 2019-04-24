@@ -24,7 +24,7 @@ makers = maker_dao.get_all()
 is_checked = False
 
 # import_list = import_dao.get_where_agreement('WHERE id = 6764')
-import_list = import_dao.get_where_agreement('WHERE id = 6786')
+import_list = import_dao.get_where_agreement('WHERE id = 7855')
 for import_data in import_list:
     javs = jav_dao.get_where_agreement('WHERE id = ' + str(import_data.javId))
 
@@ -82,9 +82,6 @@ for import_data in import_list:
     import_data.title = copy_text_tool.get_title(match_jav.title, match_jav.productNumber, match_maker)
     import_data.filename = import_parser.get_filename(import_data)
     print('filename ' + import_data.filename)
-    if not is_checked:
-        import_dao.update(import_data)
-        # import_dao.update_maker_and_filename(import_data.id, import_data.maker, import_data.filename)
 
     # maker_id 835 FC2
     if match_jav.makersId == 835:
@@ -102,15 +99,16 @@ for import_data in import_list:
                     match_jav.label = site_data.maker
                     import_data.maker = match_maker.get_maker(match_jav.label)
                     print('maker:label [' + match_makers[0].get_maker(site_data.maker) + ']')
-                    # filename = site_collect.copy_text.get_title(match_jav.title, match_jav.productNumber, match_makers[0])
                     import_data.filename = import_parser.get_filename(import_data)
                     print('filename ' + import_data.filename)
-                    # jav_dao.update_maker_label(match_maker.name, match_jav.label, match_jav.id)
-                    # import_dao.update_maker_and_filename(import_data.id, import_data.maker, import_data.filename)
+                    jav_dao.update_maker_label(match_maker.name, match_jav.label, match_jav.id)
             else:
                 print('not site_data')
     else:
             print('not fc2')
+
+    if not is_checked:
+        import_dao.update(import_data)
 
 '''
     if '[裏' in import_data.filename:

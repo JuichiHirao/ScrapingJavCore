@@ -9,16 +9,18 @@ from src import data
 jav_dao = db.jav.JavDao()
 import_dao = db.import_dao.ImportDao()
 maker_dao = db.maker.MakerDao()
+import_parser = common.ImportParser()
 
 is_checked = False
 is_import = True
-imports = import_dao.get_where_agreement('WHERE id = 7478')
+imports = import_dao.get_where_agreement('WHERE id = 7895')
 
 if imports is not None:
     jav_id = imports[0].javId
     jav_where = 'WHERE id in (' + str(jav_id) + ') order by id limit 50'
 else:
-    # jav_where = 'WHERE id in (22980) order by id limit 50'
+    # jav_where = 'WHERE id in (25048) order by id limit 50'
+    # jav_where = 'WHERE is_parse2 < 0 and is_selection = 1 order by post_date '
     jav_where = 'WHERE is_selection = 1 order by post_date '
 # javs = jav_dao.get_where_agreement('WHERE is_selection = 1 and is_parse2 < 0 order by post_date ')
 # javs = jav_dao.get_where_agreement('WHERE is_selection = 1 and search_result is null order by id')
@@ -160,6 +162,16 @@ for jav in javs:
                 import_list = import_dao.update_search_result(result_search.strip(), import_data.id)
             print('import result search [' + result_search + ']')
 
+        # FC2 label
+        if match_maker is not None and match_maker.id == 835:
+            if site_data is not None and jav.label != site_data.maker:
+                if not is_checked:
+                    import_data.maker = match_maker.get_maker(site_data.maker)
+                    import_data.filename = import_parser.get_filename(import_data)
+                    jav_dao.update_maker_label(jav.maker, site_data.maker, jav.id)
+                    import_dao.update(import_data)
+                else:
+                    print('    change fc2 label [' + site_data.maker + ']')
     else:
         try:
             new_maker, site_data = recover.get_ng_new_maker(p_number, ng_reason, jav)

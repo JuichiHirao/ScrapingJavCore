@@ -98,7 +98,9 @@ class Recover:
         #   メーカーに登録
         # -2 : メーカー名1件だけ完全一致したが、match_strの文字列がtitleにない
         #   match_strに完全一致のメーカーをdelete:1にして、新規としてメーカーに登録
-        if ng_reason == -1 or ng_reason == -2 or ng_reason == -3:
+        # -4 : メーカー一致が複数件、match_strに複数件、レーベルに一致するmaker無し
+        # -6 : -2の中、メーカー名1件だけ完全一致したが、match_strの文字列がtitleにない（Exception発生）
+        if ng_reason == -1 or ng_reason == -2 or ng_reason == -3 or ng_reason == -4 or ng_reason == -6:
             if ng_reason == -2:
                 self.err_list.append('-2発生、1件一致の[' + jav.productNumber + ']deletedを1にする必要あり')
 
