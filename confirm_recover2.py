@@ -13,7 +13,7 @@ import_parser = common.ImportParser()
 
 is_checked = False
 is_import = True
-imports = import_dao.get_where_agreement('WHERE id = 7895')
+imports = import_dao.get_where_agreement('WHERE id > 7976 and filename like \'%【FC2%\'')
 
 if imports is not None:
     jav_id = imports[0].javId

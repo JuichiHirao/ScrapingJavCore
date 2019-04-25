@@ -1,6 +1,7 @@
 import re
 import os
 import sys
+import glob
 from datetime import datetime
 from .. import data
 from .. import db
@@ -25,6 +26,7 @@ class Environment:
 
         self.driver = None
         self.imagePath = ''
+        self.imagePathList = []
 
         if os.name == 'nt':
             self.__set_windows()
@@ -46,6 +48,17 @@ class Environment:
     def get_image_path(self):
         return self.imagePath
 
+    def get_exist_image_path(self, filename: str = ''):
+        if len(filename) <= 0:
+            return ''
+
+        for path in self.imagePathList:
+            pathname = os.path.join(path, filename)
+            if os.path.isfile(pathname):
+                return pathname
+
+        return ''
+
     def __set_windows(self):
 
         driver_path = 'c:\myapp\chromedriver.exe'
@@ -61,6 +74,8 @@ class Environment:
 
         if not os.path.isdir(self.imagePath):
             raise ImagePathNotFoundError(self.imagePath + 'に存在しません')
+
+        self.imagePathList = glob.glob(self.imagePath + '*')
 
     def __set_macos(self):
 
