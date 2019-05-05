@@ -237,17 +237,18 @@ class ProductNumber:
         find_list_maker = []
         for maker in self.makers:
             if maker.name == 'SITE' and re.search(maker.matchStr, title, flags=re.IGNORECASE):
-                match = re.search(maker.matchProductNumber, title, flags=re.IGNORECASE)
+                edit_title = re.sub(maker.matchStr, '', title)
+                match = re.search(maker.matchProductNumber, edit_title.strip(), flags=re.IGNORECASE)
                 # ' [a-z0-9_]* ', title, flags=re.IGNORECASE)
 
                 if match:
                     ng_reason = 12
                     p_number = match.group()
-                    self.__log_print('INFO SITE MATCH p_number [' + p_number.strip() + ']   ' + title + ']')
+                    self.__log_print('INFO SITE MATCH p_number [' + p_number.strip() + ']   ' + edit_title + ']')
                     return p_number.strip(), maker, ng_reason
                 else:
                     ng_reason = -12
-                    self.__log_print('NG SITEに一致したが、p_numberの取得が出来ない ' + title + ']')
+                    self.__log_print('NG SITEに一致したが、p_numberの取得が出来ない ' + edit_title + ']')
                     return '', result_maker, ng_reason
 
         for maker in self.filter_makers:

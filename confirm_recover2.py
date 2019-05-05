@@ -13,15 +13,18 @@ import_parser = common.ImportParser()
 
 is_checked = False
 is_import = True
-imports = import_dao.get_where_agreement('WHERE id > 7976 and filename like \'%【FC2%\'')
+# is_import = False
+# imports = import_dao.get_where_agreement('WHERE id = -1')
+# imports = import_dao.get_where_agreement('WHERE id = 8658 and filename like \'%【FC2%\'')
+imports = import_dao.get_where_agreement('WHERE id = 8658')
 
 if imports is not None:
     jav_id = imports[0].javId
     jav_where = 'WHERE id in (' + str(jav_id) + ') order by id limit 50'
 else:
-    # jav_where = 'WHERE id in (25048) order by id limit 50'
-    # jav_where = 'WHERE is_parse2 < 0 and is_selection = 1 order by post_date '
-    jav_where = 'WHERE is_selection = 1 order by post_date '
+    # jav_where = 'WHERE id in (24746) order by id limit 50'
+    jav_where = 'WHERE is_parse2 < 0 and is_selection = 1 order by post_date '
+    # jav_where = 'WHERE is_selection = 1 order by post_date '
 # javs = jav_dao.get_where_agreement('WHERE is_selection = 1 and is_parse2 < 0 order by post_date ')
 # javs = jav_dao.get_where_agreement('WHERE is_selection = 1 and search_result is null order by id')
 # javs = jav_dao.get_where_agreement('WHERE is_selection = 1 order by id limit 100')

@@ -113,7 +113,10 @@ class Recover:
                 # else:
                 #     self.err_list.append('-2発生、1件一致のmaker [' + jav.productNumber + '] 発見できず')
             try:
-                new_maker = self.parser.get_maker(jav)
+                if ng_reason == -4:
+                    new_maker = self.parser.get_maker_no_check(jav)
+                else:
+                    new_maker = self.parser.get_maker(jav)
                 # self.p_tool.append_maker(new_maker)
             except common.MatchStrSameError as err:
                 self.err_list.append('MatchStrがscraping.makerに既に存在' + str(err))

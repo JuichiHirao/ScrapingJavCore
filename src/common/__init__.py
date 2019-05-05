@@ -204,6 +204,9 @@ class CopyText:
                         edit_copytext = re.sub(word, '', edit_copytext)
                     # print(word + ' [' + copy_text + ']')
 
+        if re.search('^[\s]*-[\s]*', edit_copytext):
+            edit_copytext = re.sub('^[\s]*-[\s]*', '', edit_copytext)
+
         title = edit_copytext
 
         if self.is_debug:

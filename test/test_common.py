@@ -5,6 +5,19 @@ from src import data
 # PYTHONPATH=. python test/test_common.py -v
 class TestCopyText(unittest.TestCase):
 
+    def test_hyphen_start(self):
+        match_maker = data.MakerData()
+        match_maker.matchName = 'FC2'
+        match_maker.matchStr = 'FC2'
+        match_maker.matchProductNumber = '[0-9]{6}'
+        match_maker.replaceWords = 'PPV'
+        # expected = 'FC2 PPV 868965 藻無し　【限定】清純系美少女♥調教♥中出し！　特典有り【ZIP付】'
+        expected = '【無・素人個撮】家無し！金無し！そして中出し！彼氏と喧嘩別れして家を飛び出て公園で野宿しようとしていたサバサバ系自暴自棄パイパン娘を家に泊める事に成功！！ハメて中出しするまでの一部始終'
+        copy_text = common.CopyText()
+        actual = copy_text.get_title('FC2PPV-1076287 【無・素人個撮】家無し！金無し！そして中出し！彼氏と喧嘩別れして家を飛び出て公園で野宿しようとしていたサバサバ系自暴自棄パイパン娘を家に泊める事に成功！！ハメて中出しするまでの一部始終'
+                                     , '1076287', match_maker)
+        self.assertEqual(expected, actual)
+
     def test_scute(self):
         match_maker = data.MakerData()
         match_maker.matchName = 'SITE'
