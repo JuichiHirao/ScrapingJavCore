@@ -1,46 +1,49 @@
-import sys
+import urllib.request
+from bs4 import BeautifulSoup
 from datetime import datetime
 from src import tool
 from src import db
 from src import common
 from src import site
 from src import data
+import sys
 
 jav_dao = db.jav.JavDao()
 import_dao = db.import_dao.ImportDao()
 maker_dao = db.maker.MakerDao()
 import_parser = common.ImportParser()
 
+# is_checked = True
 is_checked = False
 is_import = True
 # is_import = False
 # imports = import_dao.get_where_agreement('WHERE id = -1')
 # imports = import_dao.get_where_agreement('WHERE id = 8658 and filename like \'%【FC2%\'')
-imports = import_dao.get_where_agreement('WHERE id = 8658')
+imports = import_dao.get_where_agreement('WHERE id = 8703')
 
 if imports is not None:
     jav_id = imports[0].javId
     jav_where = 'WHERE id in (' + str(jav_id) + ') order by id limit 50'
 else:
-    # jav_where = 'WHERE id in (24746) order by id limit 50'
-    jav_where = 'WHERE is_parse2 < 0 and is_selection = 1 order by post_date '
-    # jav_where = 'WHERE is_selection = 1 order by post_date '
+    # jav_where = 'WHERE id in (26866) order by id limit 50'
+    # jav_where = 'WHERE is_parse2 < 0 and is_selection = 1 order by post_date '
+    jav_where = 'WHERE is_selection = 1 order by post_date '
 # javs = jav_dao.get_where_agreement('WHERE is_selection = 1 and is_parse2 < 0 order by post_date ')
 # javs = jav_dao.get_where_agreement('WHERE is_selection = 1 and search_result is null order by id')
 # javs = jav_dao.get_where_agreement('WHERE is_selection = 1 order by id limit 100')
 javs = jav_dao.get_where_agreement(jav_where)
 
 
+parser = common.AutoMakerParser(maker_dao=maker_dao)
 try:
     site_collect = site.SiteInfoCollect()
     site_collect.initialize()
 
-    site_getter = site.SiteInfoGetter(site_collect=site_collect)
+    site_getter = site.SiteInfoGetter(site_collect=site_collect, maker_parser=parser)
 except:
     print(sys.exc_info())
     exit(-1)
 
-parser = common.AutoMakerParser(maker_dao=maker_dao)
 makers = maker_dao.get_all()
 recover = tool.recover.Recover(site_collect=site_collect, makers=makers)
 
@@ -81,6 +84,7 @@ for jav in javs:
 
         result_search = ''
         detail = ''
+        actress_name = ''
         if site_data is None:
             if match_maker.name == 'SITE':
                 result_search = site_getter.get_wiki(jav, match_maker)
@@ -105,7 +109,20 @@ for jav in javs:
             result_search = site_getter.get_wiki(jav, match_maker)
             print('    result_search [' + result_search + ']')
 
+            actress_name = site_getter.get_contents_info(jav, result_search)
+
         # 変わった情報は更新する
+        # actress
+        if len(actress_name) > 0 >= len(jav.actress):
+            print('    change actress [' + actress_name + '] <-- [' + jav.actress + ']')
+            if not is_checked:
+                jav_dao.update_actress(jav.id, actress_name)
+            if is_import and import_data.id > 0:
+                import_data.tag = actress_name
+        else:
+            if len(actress_name) > 0 and len(jav.actress.strip()) > 0:
+                print('    already set actress [' + jav.actress + '] get_info [' + actress_name + ']')
+
         # product number
         if p_number != jav.productNumber:
             print('    change p_number [' + p_number + '] <-- [' + jav.productNumber + ']')
@@ -175,6 +192,9 @@ for jav in javs:
                     import_dao.update(import_data)
                 else:
                     print('    change fc2 label [' + site_data.maker + ']')
+        else:
+            if is_import and not is_checked:
+                import_dao.update(import_data)
     else:
         try:
             new_maker, site_data = recover.get_ng_new_maker(p_number, ng_reason, jav)

@@ -184,6 +184,9 @@ class ImportDao(mysql_base.MysqlBase):
               '    , sell_date = %s ' \
               '  WHERE id = %s'
 
+        if len(sell_date) <= 0:
+            sell_date = None
+
         self.cursor.execute(sql, (detail, sell_date, id))
         print("import update id [" + str(id) + "] detail, sell_date")
 
