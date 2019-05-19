@@ -103,11 +103,19 @@ class SiteInfoGetter:
                 result_search = self.site_collect.sougou_wiki.search(jav.productNumber)
             # elif match_maker.siteKind == 0:
             else:
-                site_name, site_url = self.site_collect.google_wiki.get_info(jav.productNumber)
-                result_search = site_name + ' ' + site_url
+                site_list = self.site_collect.google_wiki.get_info(jav.productNumber)
 
-                if len(site_name) <= 0:
-                    result_search = self.site_collect.sougou_wiki.search(jav.productNumber)
+                result_search = ''
+                for site_info in site_list:
+                    wiki_detail_data = self.get_contents_info(jav, site_info)
+
+                    if wiki_detail_data is not None and len(wiki_detail_data.actress.strip()) > 0:
+                        result_search = site_info
+                        break
+
+                if len(result_search) <= 0:
+                    if len(site_list) > 0:
+                        result_search = site_list[0]
 
         return result_search
 
@@ -204,7 +212,7 @@ class SiteInfoGetter:
             span_c = div_c.findAll('span')
             for span_text in span_c:
                 if '女優' in span_text.text:
-                    site_data.actress = m.group()
+                    # site_data.actress = m.group()
                     site_data.actress = re.sub('出演女優名.*：', '', span_text.text)
                     # print('actress ' + actress_name)
                 # print('  span_text ' + span_text.text)
@@ -237,7 +245,7 @@ class SiteInfoGetter:
 
                 idx = 0
                 for td in td_list:
-                    print(str(idx) + ' ' + td.text)
+                    # print(str(idx) + ' ' + td.text)
                     td_data_list[idx] = td.text
                     # td_data_list.append(td.text)
                     if jav.productNumber in td.text:
@@ -251,7 +259,7 @@ class SiteInfoGetter:
                         break
 
                 if is_match:
-                    print(str(td_data_list))
+                    # print(str(td_data_list))
                     site_data.actress = td_data_list[3]
                     site_data.streamDate = td_data_list[4]
                     break
@@ -296,7 +304,7 @@ class SiteInfoGetter:
                         break
 
                 if is_match:
-                    print(str(td_data_list))
+                    # print(str(td_data_list))
                     site_data.actress = td_data_list[3]
                     # site_data.streamDate = td_data_list[4]
                     break

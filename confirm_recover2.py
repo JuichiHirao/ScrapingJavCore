@@ -19,7 +19,7 @@ is_import = True
 # is_import = False
 # imports = import_dao.get_where_agreement('WHERE id = -1')
 # imports = import_dao.get_where_agreement('WHERE id = 8658 and filename like \'%【FC2%\'')
-imports = import_dao.get_where_agreement('WHERE id = 8699')
+imports = import_dao.get_where_agreement('WHERE id = 8703')
 
 if imports is not None:
     jav_id = imports[0].javId

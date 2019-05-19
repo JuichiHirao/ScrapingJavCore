@@ -64,13 +64,14 @@ class Google:
 
         urllib.request.install_opener(self.opener)
 
-        site_name = ''
-        site_url = ''
+        site_list = []
         with urllib.request.urlopen(url) as response:
             html = response.read()
             google_result_soup = BeautifulSoup(html, "html.parser")
             div_r_list = google_result_soup.findAll('div', class_='r')
 
+            jav = data.JavData()
+            jav.productNumber = product_number
             for idx, div_r in enumerate(div_r_list):
                 a_div_r = div_r.find('a')
                 url = a_div_r['href']
@@ -78,29 +79,21 @@ class Google:
                 print('    Google ' + product_number + ' ' + url)
 
                 if 'shecool.net' in url:
-                    site_name = 'shecool.net'
-                    site_url = url
-                    break
+                    site_list.append('shecool.net' + ' ' + url)
 
                 if 'sougouwiki.com' in url and '/d/' in url:
-                    site_name = '総合wiki'
-                    site_url = url
-                    break
+                    site_list.append('総合wiki' + ' ' + url)
 
                 if 'seesaawiki.jp' in url:
-                    site_name = 'seesaaWiki'
-                    site_url = url
-                    break
+                    site_list.append('seesaaWiki' + ' ' + url)
 
                 if 'avwikich.com' in url:
-                    site_name = 'AVWikiCh'
-                    site_url = url
-                    break
+                    site_list.append('AVWikiCh' + ' ' + url)
 
                 if idx > 8:
                     break
 
-        return site_name, site_url
+        return site_list
 
     def __parse_site_data(self, url):
 
