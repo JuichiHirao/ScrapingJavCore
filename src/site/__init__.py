@@ -46,6 +46,7 @@ class SiteInfoCollect:
 class SiteInfoGetter:
 
     def __init__(self, site_collect: SiteInfoCollect = None, is_debug: bool = False, maker_parser: common.AutoMakerParser() = None):
+        self.match_sell_date = '[12][0][0-9][0-9][-/][0-1][0-9][-/][0-3][0-9]'
         self.is_debug = is_debug
 
         if site_collect is None:
@@ -120,7 +121,7 @@ class SiteInfoGetter:
             return ''
 
         if 'sougouwiki.com' in result_search.strip():
-            response = requests.get('http://sougouwiki.com/d/%B9%F5%C1%A5')
+            response = requests.get(result_search_list[1])
             response.encoding = 'euc_jp'
             html = response.text
             html_soup = BeautifulSoup(html, 'html.parser')
@@ -133,20 +134,29 @@ class SiteInfoGetter:
             return ''
 
         actress_name = ''
+        site_data = None
         if 'shecool.net' in result_search.strip():
-            actress_name = self.__get_info_shecool(jav, html_soup)
+            site_data = self.__get_info_shecool(jav, html_soup)
+            # site_data.print('    ')
         if 'avwikich.com' in result_search.strip():
-            actress_name = self.__get_info_avwikich(jav, html_soup)
+            site_data = self.__get_info_avwikich(jav, html_soup)
+            # site_data.print('    ')
         if 'sougouwiki.com' in result_search.strip():
-            actress_name = self.__get_info_sougouwiki(jav, html_soup)
+            site_data = self.__get_info_sougouwiki(jav, html_soup)
+            # site_data.print('    ')
+        if 'seesaawiki.jp' in result_search.strip():
+            site_data = self.__get_info_seesaawiki(jav, html_soup)
+            # site_data.print('    ')
 
-        actress_name = self.maker_parser.apply_replace_info(actress_name, ('actress',))
+        if site_data is not None and len(site_data.actress.strip()) > 0:
+            site_data.actress = self.maker_parser.apply_replace_info(site_data.actress, ('actress',))
+            site_data.actress = site_data.actress.replace('？', '').replace('?', '')
 
-        return actress_name.replace('？', '')
+        return site_data
 
     def __get_info_shecool(self, jav: data.JavData = None, html_soup: BeautifulSoup = None):
 
-        actress_name = ''
+        site_data = data.SiteData()
 
         contents_list = html_soup.findAll('div', class_='s-contents')
         # print('contents_list ' + str(len(contents_list)))
@@ -155,11 +165,15 @@ class SiteInfoGetter:
         for idx, div_c in enumerate(contents_list):
             a_name = div_c.find('a')
             if a_name is not None:
-                actress_name = a_name.text
+                site_data.actress = a_name.text
                 # print('  a_text ' + str(a_name_text.text))
 
             span_c = div_c.findAll('span')
             for idx, span_text in enumerate(span_c):
+                if re.search(self.match_sell_date, span_text.text):
+                    m = re.search(self.match_sell_date, span_text.text)
+                    # print('match sell_date ' + str(m.group()))
+                    site_data.streamDate = m.group()
                 # print('  span_text ' + span_text.text)
                 if jav.productNumber in span_text.text:
                     is_match = True
@@ -168,13 +182,14 @@ class SiteInfoGetter:
             if is_match:
                 break
             else:
-                actress_name = ''
+                site_data.streamDate = ''
+                site_data.actress = ''
 
-        return actress_name
+        return site_data
 
     def __get_info_avwikich(self, jav: data.JavData = None, html_soup: BeautifulSoup = None):
 
-        actress_name = ''
+        site_data = data.SiteData()
 
         contents_list = html_soup.findAll('div', class_='entry-content')
         # print('contents_list ' + str(len(contents_list)))
@@ -183,60 +198,113 @@ class SiteInfoGetter:
         for div_c in contents_list:
             a_name = div_c.find('a')
             if a_name is not None:
-                actress_name = a_name.text
+                site_data.actress = a_name.text
                 # print('  a_text ' + str(a_name_text.text))
 
             span_c = div_c.findAll('span')
             for span_text in span_c:
                 if '女優' in span_text.text:
-                    actress_name = re.sub('出演女優名.*：', '', span_text.text)
+                    site_data.actress = m.group()
+                    site_data.actress = re.sub('出演女優名.*：', '', span_text.text)
                     # print('actress ' + actress_name)
                 # print('  span_text ' + span_text.text)
+                if re.search('[12][0][0-9][0-9][-/][0-1][0-9][-/][0-3][0-9]', span_text.text):
+                    m = re.search(self.match_sell_date, span_text.text)
+                    # print('avwiki match sell_date ' + str(m.group()))
+                    site_data.streamDate = m.group()
+
                 if jav.productNumber in div_c.text:
                     is_match = True
-                    # print(actress_name)
 
             if is_match:
                 break
-            else:
-                actress_name = ''
 
-        return actress_name
+        return site_data
 
     def __get_info_sougouwiki(self, jav: data.JavData = None, html_soup: BeautifulSoup = None):
 
-        actress_name = ''
+        site_data = data.SiteData()
 
-        main_table = html_soup.find('table', class_='edit')
-
+        # main_table = html_soup.find('table', class_='edit')
+        main_tables = html_soup.findAll('table')
         td_data_list = ['', '', '', '', ''] # 0 pNum, 1 img, 2 title, 3 a_name, 4 date
-        # td_data_list = [] # 0 pNum, 1 img, 2 title, 3 a_name, 4 date
         is_match = False
-        tr_list = main_table.findAll('tr')
-        for tr in tr_list:
-            td_list = tr.findAll('td', recursive=False)
+        for table in main_tables:
+            # td_data_list = [] # 0 pNum, 1 img, 2 title, 3 a_name, 4 date
+            tr_list = table.findAll('tr')
+            for tr in tr_list:
+                td_list = tr.findAll('td', recursive=False)
 
-            idx = 0
-            for td in td_list:
-                # print(str(idx) + ' ' + td.text)
-                td_data_list[idx] = td.text
-                # td_data_list.append(td.text)
-                if jav.productNumber in td.text:
-                    # str_euc = tr.text
-                    # print(tr.text)
-                    # print(unicode(tr.text, "utf-8"))
-                    is_match = True
-                idx = idx + 1
+                idx = 0
+                for td in td_list:
+                    print(str(idx) + ' ' + td.text)
+                    td_data_list[idx] = td.text
+                    # td_data_list.append(td.text)
+                    if jav.productNumber in td.text:
+                        # str_euc = tr.text
+                        # print(tr.text)
+                        # print(unicode(tr.text, "utf-8"))
+                        is_match = True
+                    idx = idx + 1
 
-                if idx >= 4:
+                    if idx >= 5:
+                        break
+
+                if is_match:
+                    print(str(td_data_list))
+                    site_data.actress = td_data_list[3]
+                    site_data.streamDate = td_data_list[4]
                     break
+                else:
+                    site_data.actress = ''
 
             if is_match:
-                print(str(td_data_list))
-                actress_name = td_data_list[3]
                 break
-            else:
-                actress_name = ''
 
-        return actress_name
+        return site_data
+
+    def __get_info_seesaawiki(self, jav: data.JavData = None, html_soup: BeautifulSoup = None):
+
+        site_data = data.SiteData()
+
+        main_tables = html_soup.findAll('table')
+        td_data_list = ['', '', '', '', ''] # 0 pNum, 1 img, 2 title, 3 a_name, 4 date
+        is_match = False
+        for table in main_tables:
+            # td_data_list = [] # 0 pNum, 1 name, 2 img, 3 a_name
+            tr_list = table.findAll('tr')
+            for tr in tr_list:
+                td_list = tr.findAll('td', recursive=False)
+
+                idx = 0
+                for td in td_list:
+                    a_href = td.find('a')
+                    if a_href is not None:
+                        href_text = a_href['href']
+                    else:
+                        href_text = ''
+
+                    # print(str(idx) + ' ' + td.text + ' ' + href_text)
+                    td_data_list[idx] = td.text
+
+                    if len(href_text) > 0 and jav.productNumber in href_text:
+                        # print(tr.text)
+                        is_match = True
+                    idx = idx + 1
+
+                    if idx >= 5:
+                        break
+
+                if is_match:
+                    print(str(td_data_list))
+                    site_data.actress = td_data_list[3]
+                    # site_data.streamDate = td_data_list[4]
+                    break
+                else:
+                    site_data.actress = ''
+
+            if is_match:
+                break
+
+        return site_data
 

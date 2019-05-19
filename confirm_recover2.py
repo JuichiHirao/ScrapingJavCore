@@ -19,7 +19,7 @@ is_import = True
 # is_import = False
 # imports = import_dao.get_where_agreement('WHERE id = -1')
 # imports = import_dao.get_where_agreement('WHERE id = 8658 and filename like \'%【FC2%\'')
-imports = import_dao.get_where_agreement('WHERE id = 8703')
+imports = import_dao.get_where_agreement('WHERE id = 8699')
 
 if imports is not None:
     jav_id = imports[0].javId
@@ -75,6 +75,7 @@ for jav in javs:
         # jav_dao.update_maker_label()
         # site_data.print()
 
+    actress_name = ''
     if ng_reason > 0:
         ok_cnt = ok_cnt + 1
         if jav.sellDate is None:
@@ -109,7 +110,12 @@ for jav in javs:
             result_search = site_getter.get_wiki(jav, match_maker)
             print('    result_search [' + result_search + ']')
 
-            actress_name = site_getter.get_contents_info(jav, result_search)
+            wiki_detail_data = site_getter.get_contents_info(jav, result_search)
+
+            if wiki_detail_data is not None:
+                actress_name = wiki_detail_data.actress
+                # jav_dao.update_actress(jav.id, actress_name)
+                # import_data.tag = actress_name
 
         # 変わった情報は更新する
         # actress

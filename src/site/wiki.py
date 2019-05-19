@@ -87,8 +87,8 @@ class Google:
                     site_url = url
                     break
 
-                if 'seasaawiki.jp' in url:
-                    site_name = 'seasaaWiki'
+                if 'seesaawiki.jp' in url:
+                    site_name = 'seesaaWiki'
                     site_url = url
                     break
 
