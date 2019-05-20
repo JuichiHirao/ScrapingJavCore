@@ -154,11 +154,14 @@ class SiteInfoGetter:
             # site_data.print('    ')
         if 'seesaawiki.jp' in result_search.strip():
             site_data = self.__get_info_seesaawiki(jav, html_soup)
+            if len(site_data.actress) <= 0:
+                site_data = self.__get_info_seesaawiki_div(jav, html_soup)
             # site_data.print('    ')
 
         if site_data is not None and len(site_data.actress.strip()) > 0:
             site_data.actress = self.maker_parser.apply_replace_info(site_data.actress, ('actress',))
             site_data.actress = site_data.actress.replace('？', '').replace('?', '')
+            site_data.actress = site_data.actress.replace('／', ',')
 
         return site_data
 
@@ -310,6 +313,31 @@ class SiteInfoGetter:
                     break
                 else:
                     site_data.actress = ''
+
+            if is_match:
+                break
+
+        return site_data
+
+    def __get_info_seesaawiki_div(self, jav: data.JavData = None, html_soup: BeautifulSoup = None):
+
+        site_data = data.SiteData()
+
+        wiki_divs = html_soup.findAll('div', class_='wiki-section-3')
+        is_match = False
+        for wiki_div in wiki_divs:
+            h5_title = wiki_div.find('h5')
+            h5_title_text = h5_title.text
+            if len(h5_title_text) > 0 and jav.productNumber in h5_title_text:
+                is_match = True
+            else:
+                continue
+            wiki_body = wiki_div.find('div', class_='wiki-section-body-3')
+            # print(wiki_body.text)
+            for line_data in wiki_body.find_all(['a', 'span']):
+                if '女優名' in line_data.text:
+                    site_data.actress = re.sub('名前.*女優名.*：', '', line_data.text)
+                    # print(line_data.text)
 
             if is_match:
                 break
