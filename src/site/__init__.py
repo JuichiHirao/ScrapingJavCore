@@ -7,6 +7,7 @@ from . import wiki
 from . import mgs
 from . import hey
 from . import fanza
+from . import tokyohot
 from .. import data
 from .. import common
 
@@ -18,6 +19,7 @@ class SiteInfoCollect:
         self.fc2 = None
         self.hey = None
         self.mgs = None
+        self.tokyohot = None
         self.sougou_wiki = None
         self.google_wiki = None
         self.site_wiki = None
@@ -29,6 +31,9 @@ class SiteInfoCollect:
             self.sougou_wiki = wiki.SougouWiki()
             self.google_wiki = wiki.Google()
             self.site_wiki = wiki.Site()
+
+        if self.tokyohot is None:
+            self.tokyohot = tokyohot.Tokyohot()
 
         if self.fanza is None:
             self.fanza = fanza.Fanza()
@@ -64,6 +69,9 @@ class SiteInfoGetter:
 
         if match_maker.name == 'SITE':
             return site_data
+
+        if site_data is None and '東京熱' in match_maker.name:
+            site_data = self.site_collect.tokyohot.get_info(jav.productNumber)
 
         if site_data is None and 'HEY動画' in match_maker.name:
             site_data = self.site_collect.hey.get_info(jav.productNumber)
@@ -122,11 +130,11 @@ class SiteInfoGetter:
     def get_contents_info(self, jav: data.JavData = None, result_search: str = ''):
 
         if len(result_search.strip()) <= 0:
-            return ''
+            return None
 
         result_search_list = result_search.strip().split(' ')
         if len(result_search_list) <= 1:
-            return ''
+            return None
 
         if 'sougouwiki.com' in result_search.strip():
             response = requests.get(result_search_list[1])

@@ -19,7 +19,7 @@ is_import = True
 # is_import = False
 # imports = import_dao.get_where_agreement('WHERE id = -1')
 # imports = import_dao.get_where_agreement('WHERE id = 8658 and filename like \'%【FC2%\'')
-imports = import_dao.get_where_agreement('WHERE id = 8703')
+imports = import_dao.get_where_agreement('WHERE id = 8685')
 
 if imports is not None:
     jav_id = imports[0].javId
@@ -86,6 +86,7 @@ for jav in javs:
         result_search = ''
         detail = ''
         actress_name = ''
+        is_selldate_changed = False
         if site_data is None:
             if match_maker.name == 'SITE':
                 result_search = site_getter.get_wiki(jav, match_maker)
@@ -114,11 +115,16 @@ for jav in javs:
 
             if wiki_detail_data is not None:
                 actress_name = wiki_detail_data.actress
+                if jav.sellDate is None:
+                    if len(wiki_detail_data.streamDate) > 0:
+                        print('sell_date ' + wiki_detail_data.streamDate)
+                        is_selldate_changed = True
                 # jav_dao.update_actress(jav.id, actress_name)
                 # import_data.tag = actress_name
 
         # 変わった情報は更新する
         # actress
+        jav.actress = jav.actress.replace('—-', '')
         if len(actress_name) > 0 >= len(jav.actress):
             print('    change actress [' + actress_name + '] <-- [' + jav.actress + ']')
             if not is_checked:
@@ -137,15 +143,24 @@ for jav in javs:
 
         # detail
         is_changed = False
-        if detail is not None and len(detail) > 0:
-            sell_date = None
-            if site_data is not None:
-                str_sell_date = site_data.streamDate
-                # maker.registeredBy = 'AUTO ' + datetime.now().strftime('%Y-%m-%d')
+        if (detail is not None and len(detail) > 0) or is_selldate_changed:
+            if is_selldate_changed:
                 try:
-                    sell_date = datetime.strptime(str_sell_date, '%Y/%m/%d')
+                    if '-' in wiki_detail_data.streamDate:
+                        sell_date = datetime.strptime(wiki_detail_data.streamDate, '%Y-%m-%d')
+                    else:
+                        sell_date = datetime.strptime(wiki_detail_data.streamDate, '%Y/%m/%d')
                 except:
                     pass
+            else:
+                sell_date = None
+                if site_data is not None:
+                    str_sell_date = site_data.streamDate
+                    # maker.registeredBy = 'AUTO ' + datetime.now().strftime('%Y-%m-%d')
+                    try:
+                        sell_date = datetime.strptime(str_sell_date, '%Y/%m/%d')
+                    except:
+                        pass
 
             if sell_date is not None:
                 if jav.sellDate is None:
@@ -189,7 +204,7 @@ for jav in javs:
             print('import result search [' + result_search + ']')
 
         # FC2 label
-        if match_maker is not None and match_maker.id == 835:
+        if match_maker is not None and (match_maker.id == 835 or match_maker.id == 255):
             if site_data is not None and jav.label != site_data.maker:
                 if not is_checked:
                     import_data.maker = match_maker.get_maker(site_data.maker)
