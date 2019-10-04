@@ -13,21 +13,21 @@ import_dao = db.import_dao.ImportDao()
 maker_dao = db.maker.MakerDao()
 import_parser = common.ImportParser()
 
-# is_checked = True
-is_checked = False
-is_import = True
-# is_import = False
-# imports = import_dao.get_where_agreement('WHERE id = -1')
+is_checked = True
+# is_checked = False
+# is_import = True
+is_import = False
+imports = import_dao.get_where_agreement('WHERE id = -1')
 # imports = import_dao.get_where_agreement('WHERE id = 8658 and filename like \'%【FC2%\'')
-imports = import_dao.get_where_agreement('WHERE id = 8685')
+# imports = import_dao.get_where_agreement('WHERE id = 10390')
 
 if imports is not None:
     jav_id = imports[0].javId
     jav_where = 'WHERE id in (' + str(jav_id) + ') order by id limit 50'
 else:
-    # jav_where = 'WHERE id in (26866) order by id limit 50'
-    # jav_where = 'WHERE is_parse2 < 0 and is_selection = 1 order by post_date '
-    jav_where = 'WHERE is_selection = 1 order by post_date '
+    # jav_where = 'WHERE id in (35731) order by id limit 50'
+    jav_where = 'WHERE is_parse2 < 0 and is_selection = 1 order by post_date '
+    # jav_where = 'WHERE is_selection = 1 and post_date >= "2019-08-28 00:00:00" order by post_date '
 # javs = jav_dao.get_where_agreement('WHERE is_selection = 1 and is_parse2 < 0 order by post_date ')
 # javs = jav_dao.get_where_agreement('WHERE is_selection = 1 and search_result is null order by id')
 # javs = jav_dao.get_where_agreement('WHERE is_selection = 1 order by id limit 100')
@@ -73,7 +73,8 @@ for jav in javs:
         # site_data = data.SiteData()
         # site_data = site_getter.get_info(jav, match_maker)
         # jav_dao.update_maker_label()
-        # site_data.print()
+        # if site_data:
+        #     site_data.print()
 
     actress_name = ''
     if ng_reason > 0:
@@ -105,7 +106,9 @@ for jav in javs:
             if not is_checked:
                 jav_dao.update_detail_and_sell_date(detail, site_data.streamDate, jav.id)
                 if is_import and import_data.id > 0:
-                    import_dao.update_detail_and_sell_date(detail, site_data.streamDate, import_data.id)
+                    import_data.detail = detail
+                    import_data.sellDate = site_data.streamDate
+                    # import_dao.update_detail_and_sell_date(detail, site_data.streamDate, import_data.id)
             # site_data = data.SiteData()
             print('    site found [' + detail + ']')
             result_search = site_getter.get_wiki(jav, match_maker)

@@ -18,11 +18,11 @@ class Tokyohot:
         self.driver = self.env.get_driver()
         self.import_dao = db.import_dao.ImportDao()
 
-    def get_info(self, product_number):
+    def get_info(self, product_number: str=''):
 
         site_data = None
 
-        url = self.main_url + 'product/' + product_number
+        url = self.main_url + 'product/' + product_number.lower()
         urllib.request.install_opener(self.opener)
 
         try:
@@ -54,6 +54,8 @@ class Tokyohot:
 
         except urllib.error.HTTPError as err:
             print('HTTPError [' + str(err.code) + ']')
+        except AttributeError as err:
+            print('NoneType Error')
 
         urllib.request.urlcleanup()
 

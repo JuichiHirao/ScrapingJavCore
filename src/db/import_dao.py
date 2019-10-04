@@ -119,6 +119,12 @@ class ImportDao(mysql_base.MysqlBase):
 
     def update(self, import_data: data.ImportData):
 
+        if import_data.sellDate is None:
+            pass
+        else:
+            if len(str(import_data.sellDate)) <= 0:
+                import_data.sellDate = None
+
         sql = 'UPDATE import ' \
               'set copy_text = %s, jav_post_date = %s ' \
               '  , kind = %s, match_product = %s' \

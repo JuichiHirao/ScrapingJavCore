@@ -67,6 +67,14 @@ class SiteInfoGetter:
 
         site_data = None
 
+        p_number = ''
+        if match_maker and 'ORE' in match_maker.matchStr:
+            if match_maker.name == 'MGS':
+                p_number = '230' + jav.productNumber
+
+        if len(p_number) <= 0:
+            p_number = jav.productNumber
+
         if match_maker.name == 'SITE':
             return site_data
 
@@ -77,14 +85,15 @@ class SiteInfoGetter:
             site_data = self.site_collect.hey.get_info(jav.productNumber)
 
         if site_data is None and 'MGS' in match_maker.name or match_maker.siteKind == 2:
-            site_data = self.site_collect.mgs.get_info(jav.productNumber)
+            # site_data = self.site_collect.mgs.get_info(jav.productNumber)
+            site_data = self.site_collect.mgs.get_info(p_number)
 
         if site_data is None and 'FC2' in match_maker.name:
             site_data = self.site_collect.fc2.get_info(jav.productNumber)
 
         if site_data is None and match_maker.kind == 1:
             if match_maker.siteKind != 3 and match_maker.siteKind != 4:
-                site_data = self.site_collect.fanza.get_info(jav.productNumber)
+                site_data = self.site_collect.fanza.get_info(p_number)
 
             if site_data is None:
                 title = self.site_collect.copy_text.get_title(jav.title, jav.productNumber, match_maker)
@@ -152,7 +161,7 @@ class SiteInfoGetter:
         actress_name = ''
         site_data = None
         if 'shecool.net' in result_search.strip():
-            site_data = self.__get_info_shecool(jav, html_soup)
+            site_data = self.__get_info_shecool_p2(jav, html_soup)
             # site_data.print('    ')
         if 'avwikich.com' in result_search.strip():
             site_data = self.__get_info_avwikich(jav, html_soup)
@@ -167,13 +176,14 @@ class SiteInfoGetter:
             # site_data.print('    ')
 
         if site_data is not None and len(site_data.actress.strip()) > 0:
+            site_data.actress = site_data.actress.replace('＊＊＊', '')
             site_data.actress = self.maker_parser.apply_replace_info(site_data.actress, ('actress',))
             site_data.actress = site_data.actress.replace('？', '').replace('?', '')
             site_data.actress = site_data.actress.replace('／', ',')
 
         return site_data
 
-    def __get_info_shecool(self, jav: data.JavData = None, html_soup: BeautifulSoup = None):
+    def __get_info_shecool_p1(self, jav: data.JavData = None, html_soup: BeautifulSoup = None):
 
         site_data = data.SiteData()
 
@@ -203,6 +213,32 @@ class SiteInfoGetter:
             else:
                 site_data.streamDate = ''
                 site_data.actress = ''
+
+        return site_data
+
+    def __get_info_shecool_p2(self, jav: data.JavData = None, html_soup: BeautifulSoup = None):
+
+        site_data = data.SiteData()
+
+        contents_list = html_soup.findAll('div', class_='s-contents')
+        # print('contents_list ' + str(len(contents_list)))
+
+        is_match = False
+        for idx, div_c in enumerate(contents_list):
+            p_c = div_c.find('p')
+
+            if jav.productNumber not in p_c.text:
+                continue
+
+            for idx, elem in enumerate(p_c.childGenerator()):
+                if idx == 1:
+                    site_data.actress = str(elem)
+                if idx == 3:
+                    str_elem = str(elem)
+                    m = re.search(self.match_sell_date, str_elem)
+                    if m:
+                        site_data.streamDate = m.group()
+                        break
 
         return site_data
 
