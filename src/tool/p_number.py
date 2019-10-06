@@ -267,7 +267,18 @@ class ProductNumber:
             self.__log_print(
                 'OK matchProductNumberに1件だけ一致 '
                 '[' + result_maker.matchStr + '] [' + result_maker.matchProductNumber + '] ' + title)
-            p_number = self.get_maker_match_number(result_maker, title)
+            p_number = ''
+            if result_maker.pNumberGen == 1:
+                m = re.search(result_maker.matchProductNumber, title, flags=re.IGNORECASE)
+                m_m = re.search('\([0-9]{4}', result_maker.matchStr)
+                if m_m:
+                    m_number = m_m.group()
+                    p_number = m_number.replace('(', '') + '_' + m.group().replace('PPV', '')
+                else:
+                    self.__log_print("HEY動画のmakerのmatchStrの列が(4083|本生素人TV)の形式になっていません")
+
+            if len(p_number) <= 0:
+                p_number = self.get_maker_match_number(result_maker, title)
 
             return p_number, result_maker, ng_reason
 
@@ -292,6 +303,7 @@ class ProductNumber:
 
         if len(p_number) > 0:
             p_maker = p_number.split('-')[0]
+            # print('p_maker {}'.format(p_maker))
 
             find_filter_maker = filter(lambda maker: maker.matchStr.upper() == p_maker.upper(), self.makers)
             find_list_maker = list(find_filter_maker)
@@ -311,6 +323,7 @@ class ProductNumber:
 
             ng_reason = -22
             self.__log_print('NG タイトル内の製品番号[' + p_number + ']に複数一致 ' + title)
+            # print('{}'.format(find_list_maker))
 
         else:
             ng_reason = -23

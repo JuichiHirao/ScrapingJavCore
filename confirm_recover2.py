@@ -1,46 +1,49 @@
-import sys
+import urllib.request
+from bs4 import BeautifulSoup
 from datetime import datetime
 from src import tool
 from src import db
 from src import common
 from src import site
 from src import data
+import sys
 
 jav_dao = db.jav.JavDao()
 import_dao = db.import_dao.ImportDao()
 maker_dao = db.maker.MakerDao()
 import_parser = common.ImportParser()
 
-is_checked = False
-is_import = True
-# is_import = False
-# imports = import_dao.get_where_agreement('WHERE id = -1')
+is_checked = True
+# is_checked = False
+# is_import = True
+is_import = False
+imports = import_dao.get_where_agreement('WHERE id = -1')
 # imports = import_dao.get_where_agreement('WHERE id = 8658 and filename like \'%【FC2%\'')
-imports = import_dao.get_where_agreement('WHERE id = 8658')
+# imports = import_dao.get_where_agreement('WHERE id = 10390')
 
 if imports is not None:
     jav_id = imports[0].javId
     jav_where = 'WHERE id in (' + str(jav_id) + ') order by id limit 50'
 else:
-    # jav_where = 'WHERE id in (24746) order by id limit 50'
+    # jav_where = 'WHERE id in (35731) order by id limit 50'
     jav_where = 'WHERE is_parse2 < 0 and is_selection = 1 order by post_date '
-    # jav_where = 'WHERE is_selection = 1 order by post_date '
+    # jav_where = 'WHERE is_selection = 1 and post_date >= "2019-08-28 00:00:00" order by post_date '
 # javs = jav_dao.get_where_agreement('WHERE is_selection = 1 and is_parse2 < 0 order by post_date ')
 # javs = jav_dao.get_where_agreement('WHERE is_selection = 1 and search_result is null order by id')
 # javs = jav_dao.get_where_agreement('WHERE is_selection = 1 order by id limit 100')
 javs = jav_dao.get_where_agreement(jav_where)
 
 
+parser = common.AutoMakerParser(maker_dao=maker_dao)
 try:
     site_collect = site.SiteInfoCollect()
     site_collect.initialize()
 
-    site_getter = site.SiteInfoGetter(site_collect=site_collect)
+    site_getter = site.SiteInfoGetter(site_collect=site_collect, maker_parser=parser)
 except:
     print(sys.exc_info())
     exit(-1)
 
-parser = common.AutoMakerParser(maker_dao=maker_dao)
 makers = maker_dao.get_all()
 recover = tool.recover.Recover(site_collect=site_collect, makers=makers)
 
@@ -70,8 +73,10 @@ for jav in javs:
         # site_data = data.SiteData()
         # site_data = site_getter.get_info(jav, match_maker)
         # jav_dao.update_maker_label()
-        # site_data.print()
+        # if site_data:
+        #     site_data.print()
 
+    actress_name = ''
     if ng_reason > 0:
         ok_cnt = ok_cnt + 1
         if jav.sellDate is None:
@@ -81,6 +86,8 @@ for jav in javs:
 
         result_search = ''
         detail = ''
+        actress_name = ''
+        is_selldate_changed = False
         if site_data is None:
             if match_maker.name == 'SITE':
                 result_search = site_getter.get_wiki(jav, match_maker)
@@ -99,13 +106,38 @@ for jav in javs:
             if not is_checked:
                 jav_dao.update_detail_and_sell_date(detail, site_data.streamDate, jav.id)
                 if is_import and import_data.id > 0:
-                    import_dao.update_detail_and_sell_date(detail, site_data.streamDate, import_data.id)
+                    import_data.detail = detail
+                    import_data.sellDate = site_data.streamDate
+                    # import_dao.update_detail_and_sell_date(detail, site_data.streamDate, import_data.id)
             # site_data = data.SiteData()
             print('    site found [' + detail + ']')
             result_search = site_getter.get_wiki(jav, match_maker)
             print('    result_search [' + result_search + ']')
 
+            wiki_detail_data = site_getter.get_contents_info(jav, result_search)
+
+            if wiki_detail_data is not None:
+                actress_name = wiki_detail_data.actress
+                if jav.sellDate is None:
+                    if len(wiki_detail_data.streamDate) > 0:
+                        print('sell_date ' + wiki_detail_data.streamDate)
+                        is_selldate_changed = True
+                # jav_dao.update_actress(jav.id, actress_name)
+                # import_data.tag = actress_name
+
         # 変わった情報は更新する
+        # actress
+        jav.actress = jav.actress.replace('—-', '')
+        if len(actress_name) > 0 >= len(jav.actress):
+            print('    change actress [' + actress_name + '] <-- [' + jav.actress + ']')
+            if not is_checked:
+                jav_dao.update_actress(jav.id, actress_name)
+            if is_import and import_data.id > 0:
+                import_data.tag = actress_name
+        else:
+            if len(actress_name) > 0 and len(jav.actress.strip()) > 0:
+                print('    already set actress [' + jav.actress + '] get_info [' + actress_name + ']')
+
         # product number
         if p_number != jav.productNumber:
             print('    change p_number [' + p_number + '] <-- [' + jav.productNumber + ']')
@@ -114,15 +146,24 @@ for jav in javs:
 
         # detail
         is_changed = False
-        if detail is not None and len(detail) > 0:
-            sell_date = None
-            if site_data is not None:
-                str_sell_date = site_data.streamDate
-                # maker.registeredBy = 'AUTO ' + datetime.now().strftime('%Y-%m-%d')
+        if (detail is not None and len(detail) > 0) or is_selldate_changed:
+            if is_selldate_changed:
                 try:
-                    sell_date = datetime.strptime(str_sell_date, '%Y/%m/%d')
+                    if '-' in wiki_detail_data.streamDate:
+                        sell_date = datetime.strptime(wiki_detail_data.streamDate, '%Y-%m-%d')
+                    else:
+                        sell_date = datetime.strptime(wiki_detail_data.streamDate, '%Y/%m/%d')
                 except:
                     pass
+            else:
+                sell_date = None
+                if site_data is not None:
+                    str_sell_date = site_data.streamDate
+                    # maker.registeredBy = 'AUTO ' + datetime.now().strftime('%Y-%m-%d')
+                    try:
+                        sell_date = datetime.strptime(str_sell_date, '%Y/%m/%d')
+                    except:
+                        pass
 
             if sell_date is not None:
                 if jav.sellDate is None:
@@ -166,7 +207,7 @@ for jav in javs:
             print('import result search [' + result_search + ']')
 
         # FC2 label
-        if match_maker is not None and match_maker.id == 835:
+        if match_maker is not None and (match_maker.id == 835 or match_maker.id == 255):
             if site_data is not None and jav.label != site_data.maker:
                 if not is_checked:
                     import_data.maker = match_maker.get_maker(site_data.maker)
@@ -175,6 +216,9 @@ for jav in javs:
                     import_dao.update(import_data)
                 else:
                     print('    change fc2 label [' + site_data.maker + ']')
+        else:
+            if is_import and not is_checked:
+                import_dao.update(import_data)
     else:
         try:
             new_maker, site_data = recover.get_ng_new_maker(p_number, ng_reason, jav)

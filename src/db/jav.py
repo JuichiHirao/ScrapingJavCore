@@ -125,6 +125,17 @@ class JavDao(mysql_base.MysqlBase):
 
         self.conn.commit()
 
+    def update_actress(self, id, actress):
+
+        sql = 'UPDATE jav ' \
+              '  SET actress = %s ' \
+              '  WHERE id = %s'
+
+        self.cursor.execute(sql, (actress, id))
+        print("jav update id [" + str(id) + "] actress")
+
+        self.conn.commit()
+
     def update_product_number(self, id, product_number):
 
         sql = 'UPDATE jav ' \
