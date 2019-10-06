@@ -8,6 +8,7 @@ from . import mgs
 from . import hey
 from . import fanza
 from . import tokyohot
+from . import ave
 from .. import data
 from .. import common
 
@@ -20,6 +21,7 @@ class SiteInfoCollect:
         self.hey = None
         self.mgs = None
         self.tokyohot = None
+        self.ave = None
         self.sougou_wiki = None
         self.google_wiki = None
         self.site_wiki = None
@@ -34,6 +36,9 @@ class SiteInfoCollect:
 
         if self.tokyohot is None:
             self.tokyohot = tokyohot.Tokyohot()
+
+        if self.ave is None:
+            self.ave = ave.Ave()
 
         if self.fanza is None:
             self.fanza = fanza.Fanza()
@@ -77,6 +82,12 @@ class SiteInfoGetter:
 
         if match_maker.name == 'SITE':
             return site_data
+
+        if site_data is None and 'AVE' in match_maker.name:
+            google_w = wiki.Google()
+            site_name, site_url = google_w.get_ave_info(jav.productNumber)
+            if site_name == 'AVE':
+                site_data = self.site_collect.ave.get_info(site_url)
 
         if site_data is None and '東京熱' in match_maker.name:
             site_data = self.site_collect.tokyohot.get_info(jav.productNumber)

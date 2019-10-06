@@ -58,6 +58,40 @@ class Google:
 
         self.max_result = max_result
 
+    def get_ave_info(self, product_number):
+
+        url = 'https://www.google.com/search?q=ave+' + product_number
+
+        urllib.request.install_opener(self.opener)
+
+        site_name = ''
+        site_url = ''
+        with urllib.request.urlopen(url) as response:
+            html = response.read()
+            google_result_soup = BeautifulSoup(html, "html.parser")
+            div_r_list = google_result_soup.findAll('div', class_='r')
+
+            for idx, div_r in enumerate(div_r_list):
+                a_div_r = div_r.findAll('a')
+                for idx, a_div in enumerate(a_div_r):
+                    url = a_div['href']
+
+                    # print('    Google ' + product_number + ' ' + str(div_r))
+                    print('    Google ' + product_number + ' ' + url)
+
+                    if 'aventertainments.com/product_lists' in url:
+                        site_name = 'AVE'
+                        site_url = url
+                        break
+
+                if site_name == 'AVE':
+                    break
+
+                if idx > 8:
+                    break
+
+        return site_name, site_url
+
     def get_info(self, product_number):
 
         url = self.main_url + product_number
