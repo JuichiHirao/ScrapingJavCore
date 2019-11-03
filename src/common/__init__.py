@@ -157,10 +157,10 @@ class CopyText:
             if match_maker_str:
                 title = title.replace(match_maker_str.group(), '')
 
-            if match_maker.matchLabel is not None and len(match_maker.matchLabel) > 0:
-                match_maker_label = re.search(match_maker.matchLabel, title)
-                if match_maker_label:
-                    title = title.replace(match_maker_label.group(), '')
+            # if match_maker.matchLabel is not None and len(match_maker.matchLabel) > 0:
+            #     match_maker_label = re.search(match_maker.matchLabel, title)
+            #     if match_maker_label:
+            #         title = title.replace(match_maker_label.group(), '')
 
         edit_copytext = title
         for idx, char in enumerate(zenkaku):
@@ -444,3 +444,73 @@ class AutoMakerParser:
             return target_str.replace(replace_info.source, replace_info.destination)
 
         return ''
+
+
+class BjParser:
+
+    def get_actress(self, bj_data: data.BjData = None):
+        actress = ''
+        if '201' in bj_data.title and "KOREAN BJ" in bj_data.title:
+            match = re.search('[A-Z ]* 201', bj_data.title)
+            if match:
+                replace_str = match.group().replace(' 201', '')
+                actress = bj_data.postedIn.replace(replace_str, '').strip()
+                print('    ' + replace_str + '  ' + actress)
+            else:
+                print('    not match')
+
+        if len(actress) > 0:
+            print('    actress [' + actress + ']')
+            tag = 'KOREAN BJ ' + actress
+            tag = tag.replace('BJ BJ ', 'BJ ')
+        else:
+            tag = ''
+
+        return actress, tag
+
+    def get_dest_basename(self, bj_data: data.BjData = None, actress: str = ''):
+
+        # basename_ext = os.path.basename(bj_data.downloadLink)
+        # _, ext = os.path.splitext(basename_ext)
+        # basename = basename_ext.replace(basename_ext, '')
+        # actress = self.get_actress(bj_data)
+
+        if len(actress) > 0:
+            target_name = bj_data.basename + ' ' + bj_data.title + ' ' + actress
+        else:
+            target_name = bj_data.basename + ' ' + bj_data.title
+        # print('  ' + target_name)
+
+        return target_name
+
+    def get_thumbnail_info_list(self, bj_data: data.BjData = None, base_filename: str = ''):
+
+        is_filename = False
+        thumbnail_info_list = []
+        filename_list = []
+        if bj_data.thumbnailsFilename is not None and len(bj_data.thumbnailsFilename.strip()) > 0:
+            is_filename = True
+            filename_list = bj_data.thumbnailsFilename.split(' ')
+
+        idx = 0
+        thumbnails_list = bj_data.thumbnails.split(' ')
+        for thumbnail in thumbnails_list:
+            info_data = data.BjThumbnailInfoData()
+
+            if is_filename:
+                info_data.filename = filename_list[idx]
+            else:
+                info_data.filename = os.path.basename(thumbnail)
+            _, ext = os.path.splitext(info_data.filename)
+
+            if len(thumbnails_list) == 1:
+                info_data.dest_filename = '{}{}'.format(base_filename, ext)
+            else:
+                info_data.dest_filename = '{}_{}{}'.format(base_filename, str(idx+1), ext)
+
+            info_data.url = thumbnail
+            thumbnail_info_list.append(info_data)
+
+            idx = idx + 1
+
+        return thumbnail_info_list

@@ -1,4 +1,6 @@
 import re
+import os
+from .. import common
 
 
 class JavData:
@@ -102,6 +104,13 @@ class Jav2Data:
         print(' ')
 
 
+class BjThumbnailInfoData:
+    def __init__(self):
+        self.url = ''
+        self.filename = ''
+        self.dest_filename = ''
+
+
 class BjData:
 
     def __init__(self):
@@ -110,6 +119,7 @@ class BjData:
         self.postDate = None
         self.thumbnails = ''
         self.thumbnailsCount = 0
+        self.thumbnailsFilename = ''
         self.downloadLink = ''
         self.url = ''
         self.postedIn = ''
@@ -118,13 +128,46 @@ class BjData:
         self.createdAt = None
         self.updatedAt = None
 
+        # parserで追加される項目
+        self.thumbnailInfoList = []
+        self.rar_filename = ''
+        # rarの拡張子を削除
+        self.basename = ''
+        self.actress = ''
+        self.tag = ''
+        # 出力するファイル名
+        self.base_filename = ''
+
+    # def parse(self, parser: common.BjParser = None):
+    def parse(self, parser):
+
+        if parser is None:
+            raise Exception('BjDataのparserが設定されていません')
+
+        self.rar_filename = os.path.basename(self.downloadLink)
+        _, ext = os.path.splitext(self.rar_filename)
+        self.basename = self.rar_filename.replace(ext, '')
+        self.actress, self.tag = parser.get_actress(self)
+        self.base_filename = parser.get_dest_basename(self, self.actress)
+
+        self.thumbnailInfoList = parser.get_thumbnail_info_list(self, self.base_filename)
+
     def print(self):
-        print('【' + self.title + '】')
+        print('【{}】'.format(self.title))
         print('  post_data     [' + str(self.postDate) + ']')
         print('  th count      [' + str(self.thumbnailsCount) + '] ' + self.thumbnails)
         print('  download_link [' + self.downloadLink + ']')
         print('  posted_in     [' + self.postedIn + ']')
         print('  url           [' + self.url + ']')
+        print('  thumbnailInfo [{}]'.format(len(self.thumbnailInfoList)))
+        for idx, thumbnailInfo in enumerate(self.thumbnailInfoList):
+            print('                  {} filename [{}]'.format(idx, thumbnailInfo.filename))
+            print('                  {} dest     [{}]'.format(idx, thumbnailInfo.dest_filename))
+            print('                  {} url      [{}]'.format(idx, thumbnailInfo.url))
+        print('  rar_filename  [{}]'.format(self.rar_filename))
+        print('  basename      [{}]'.format(self.basename))
+        print('  actress       [{}]'.format(self.actress))
+        print('  tag           [{}]'.format(self.tag))
         print(' ')
 
 

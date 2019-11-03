@@ -39,9 +39,9 @@ class BjDao(mysql_base.MysqlBase):
     def __get_sql_select(self):
 
         sql = 'SELECT id' \
-              '  , title, post_date, thumbnails, thumbnails_count ' \
-              '  , download_link, url, posted_in, is_selection ' \
-              '  , is_downloads, rating ' \
+              '  , title, post_date, thumbnails, thumbnails_filename ' \
+              '  , thumbnails_count, download_link, url, posted_in ' \
+              '  , is_selection, is_downloads, rating ' \
               '  , created_at, updated_at ' \
               '  FROM bj '
 
@@ -56,15 +56,16 @@ class BjDao(mysql_base.MysqlBase):
             bj.title = row[1]
             bj.postDate = row[2]
             bj.thumbnails = row[3]
-            bj.thumbnailsCount = row[4]
-            bj.downloadLink = row[5]
-            bj.url = row[6]
-            bj.postedIn = row[7]
-            bj.isSelection = row[8]
-            bj.isDownloads = row[9]
-            bj.rating = row[10]
-            bj.createdAt = row[11]
-            bj.updatedAt = row[12]
+            bj.thumbnailsFilename = row[4]
+            bj.thumbnailsCount = row[5]
+            bj.downloadLink = row[6]
+            bj.url = row[7]
+            bj.postedIn = row[8]
+            bj.isSelection = row[9]
+            bj.isDownloads = row[10]
+            bj.rating = row[11]
+            bj.createdAt = row[12]
+            bj.updatedAt = row[13]
             bjs.append(bj)
 
         return bjs
@@ -88,6 +89,20 @@ class BjDao(mysql_base.MysqlBase):
                 break
 
         return exist
+
+    def update_thumbnails_info(self, id: int = -1, thumbnails: str = '', thumbnails_filename: str = ''
+                               , thumbnails_count: int = -1):
+
+        sql = 'UPDATE bj ' \
+              '  SET thumbnails = %s ' \
+              '    , thumbnails_filename = %s ' \
+              '    , thumbnails_count = %s ' \
+              '  WHERE id = %s'
+
+        self.cursor.execute(sql, (thumbnails, thumbnails_filename, thumbnails_count, id))
+        print("bj update id [" + str(id) + "] thumbnails info ")
+
+        self.conn.commit()
 
     def update_is_download(self, id, is_downloads):
 

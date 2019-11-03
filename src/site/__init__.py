@@ -238,6 +238,9 @@ class SiteInfoGetter:
         for idx, div_c in enumerate(contents_list):
             p_c = div_c.find('p')
 
+            if p_c is None:
+                continue
+
             if jav.productNumber not in p_c.text:
                 continue
 
