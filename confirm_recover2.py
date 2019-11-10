@@ -13,22 +13,23 @@ import_dao = db.import_dao.ImportDao()
 maker_dao = db.maker.MakerDao()
 import_parser = common.ImportParser()
 
-is_checked = True
-# is_checked = False
+# is_checked = True
+is_checked = False
 # is_import = True
 is_import = False
 imports = import_dao.get_where_agreement('WHERE id = -1')
 # imports = import_dao.get_where_agreement('WHERE id = 8658 and filename like \'%【FC2%\'')
-# imports = import_dao.get_where_agreement('WHERE id = 10390')
+# imports = import_dao.get_where_agreement('WHERE id = 12251')
 
 if imports is not None:
     jav_id = imports[0].javId
     jav_where = 'WHERE id in (' + str(jav_id) + ') order by id limit 50'
 else:
-    # jav_where = 'WHERE id in (35731) order by id limit 50'
+    # jav_where = 'WHERE id in (36830) order by id limit 50'
     jav_where = 'WHERE is_parse2 < 0 and is_selection = 1 order by post_date '
-    # jav_where = 'WHERE is_selection = 1 and post_date >= "2019-08-28 00:00:00" order by post_date '
-# javs = jav_dao.get_where_agreement('WHERE is_selection = 1 and is_parse2 < 0 order by post_date ')
+    # jav_where = 'WHERE is_selection = 1 and post_date >= "2019-10-14 00:00:00" order by post_date '
+    # jav_where = 'WHERE is_selection = 1 and post_date >= "2019-11-14 00:00:00" order by post_date '
+# javs = jav_dao.get_where_agreement('WHERE is_selection = 1 and is_v   parse2 < 0 order by post_date ')
 # javs = jav_dao.get_where_agreement('WHERE is_selection = 1 and search_result is null order by id')
 # javs = jav_dao.get_where_agreement('WHERE is_selection = 1 order by id limit 100')
 javs = jav_dao.get_where_agreement(jav_where)
@@ -143,6 +144,10 @@ for jav in javs:
             print('    change p_number [' + p_number + '] <-- [' + jav.productNumber + ']')
             if not is_checked:
                 jav_dao.update_product_number(jav.id, p_number)
+        if is_import and import_data.id > 0:
+            if p_number != import_data.productNumber:
+                print('    change import p_number [' + p_number + '] <-- [' + import_data.productNumber + ']')
+                import_data.productNumber = jav.productNumber
 
         # detail
         is_changed = False
@@ -201,10 +206,10 @@ for jav in javs:
             else:
                 print('    change search_result [' + result_search + '] <-- [' + jav_searchResult + ']')
 
-        if is_import and import_data.id > 0:
-            if not is_checked:
-                import_list = import_dao.update_search_result(result_search.strip(), import_data.id)
-            print('import result search [' + result_search + ']')
+        # if is_import and import_data.id > 0:
+        #     if not is_checked:
+        #         import_list = import_dao.update_search_result(result_search.strip(), import_data.id)
+        #     print('import result search [' + result_search + ']')
 
         # FC2 label
         if match_maker is not None and (match_maker.id == 835 or match_maker.id == 255):
@@ -226,6 +231,7 @@ for jav in javs:
                 new_maker.print('NEW ')
                 if not is_checked:
                     maker_dao.export(new_maker)
+                makers.append(new_maker)
         except tool.recover.RecoverError as rerr:
             err_list.append(str(rerr))
 

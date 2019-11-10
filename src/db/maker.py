@@ -115,7 +115,7 @@ class MakerDao(mysql_base.MysqlBase):
 
         return
 
-    def export(self, maker: data.MakerData):
+    def export(self, maker):
 
         sql = 'INSERT INTO maker ( ' \
               '  name, match_name, label, match_label, kind ' \

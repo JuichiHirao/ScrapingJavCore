@@ -89,7 +89,7 @@ class Jav2Dao(mysql_base.MysqlBase):
 
         return exist
 
-    def export(self, jav2_data: data.Jav2Data):
+    def export(self, jav2_data):
 
         sql = 'INSERT INTO jav2 (title'\
               '    , post_date, package, thumbnail, download_links ' \

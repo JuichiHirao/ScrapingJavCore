@@ -88,7 +88,7 @@ class ImportDao(mysql_base.MysqlBase):
 
         return import_list
 
-    def export_import(self, import_data: data.ImportData):
+    def export_import(self, import_data):
 
         sql = 'INSERT INTO import(copy_text, jav_post_date ' \
                 ', kind, match_product, product_number, sell_date ' \
@@ -117,7 +117,7 @@ class ImportDao(mysql_base.MysqlBase):
 
         return
 
-    def update(self, import_data: data.ImportData):
+    def update(self, import_data):
 
         if import_data.sellDate is None:
             pass

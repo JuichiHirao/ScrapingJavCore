@@ -126,7 +126,7 @@ class BjDao(mysql_base.MysqlBase):
 
         self.conn.commit()
 
-    def export(self, import_data: data.ImportData):
+    def export(self, import_data):
 
         sql = 'INSERT INTO import(copy_text, jav_post_date ' \
               ', kind, match_product, product_number, sell_date ' \

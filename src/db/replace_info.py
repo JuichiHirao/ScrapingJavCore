@@ -59,7 +59,7 @@ class ReplaceInfoDao(mysql_base.MysqlBase):
 
         return replace_info_list
 
-    def update(self, replace_info: data.ReplaceInfoData):
+    def update(self, replace_info):
 
         sql = 'UPDATE replace_info ' \
               '  SET type = %s, source = %s, destination = %s, source_type = %s ' \
@@ -71,7 +71,7 @@ class ReplaceInfoDao(mysql_base.MysqlBase):
 
         self.conn.commit()
 
-    def export(self, replace_info: data.ReplaceInfoData):
+    def export(self, replace_info):
 
         sql = 'INSERT INTO replace_info ( ' \
               '  type, source, destination, source_type' \

@@ -100,7 +100,7 @@ class JavDao(mysql_base.MysqlBase):
 
         return exist
 
-    def update_collect_info(self, jav_data: data.JavData):
+    def update_collect_info(self, jav_data):
 
         sql = 'UPDATE jav ' \
               '  SET package = %s ' \
@@ -220,7 +220,7 @@ class JavDao(mysql_base.MysqlBase):
 
         self.conn.commit()
 
-    def export(self, jav_data: data.JavData):
+    def export(self, jav_data):
 
         sql = 'INSERT INTO jav (title, post_date ' \
                 '  , sell_date, actress, maker, label' \

@@ -128,7 +128,7 @@ class CopyText:
 
         return str_date
 
-    def get_title(self, copy_text: str = '', product_number: str = '', match_maker: data.MakerData = None):
+    def get_title(self, copy_text, product_number, match_maker):
 
         hankaku_kigou = ['/', ':']
         zenkaku_kigou = ['／', '：']
@@ -222,7 +222,7 @@ class ImportParser:
         self.replace_info_dao = db.replace_info.ReplaceInfoDao()
         self.replace_info_list = self.replace_info_dao.get_all()
 
-    def get_actress(self, jav: data.JavData() = None):
+    def get_actress(self, jav):
 
         actress = ''
         for replace_info in self.replace_info_list:
@@ -238,7 +238,7 @@ class ImportParser:
 
         return actress
 
-    def get_filename(self, import_data: data.ImportData() = None):
+    def get_filename(self, import_data):
 
         if import_data is None:
             return ''
@@ -289,7 +289,7 @@ class AutoMakerParser:
         # INSERT INTO replace_info (type, source, destination) VALUES('maker_name', 'プレステージ', 'PreStige');
         # INSERT INTO replace_info (type, source, destination) VALUES('maker_m_name', 'プレステージ', 'プレステージ');
 
-    def get_maker_hey(self, p_number: str = '', site_data: data.SiteData() = None):
+    def get_maker_hey(self, p_number, site_data):
 
         '''
         INSERT INTO scraping.maker (name, match_name, label, kind, match_str, match_product_number, site_kind, replace_words, p_number_gen, deleted, registered_by)
@@ -310,7 +310,7 @@ class AutoMakerParser:
 
         return maker
 
-    def get_maker_no_check(self, jav: data.JavData()):
+    def get_maker_no_check(self, jav):
 
         m_p = re.search('[A-Z0-9]{2,5}-[A-Z0-9]{2,4}', jav.title, re.IGNORECASE)
 
@@ -347,7 +347,7 @@ class AutoMakerParser:
 
         return maker
 
-    def get_maker(self, jav: data.JavData()):
+    def get_maker(self, jav):
 
         m_p = re.search('[A-Z0-9]{2,5}-[A-Z0-9]{2,4}', jav.title, re.IGNORECASE)
 
@@ -383,7 +383,7 @@ class AutoMakerParser:
 
         return maker
 
-    def get_maker_from_site(self, site_data: data.SiteData(), site_name: str = ''):
+    def get_maker_from_site(self, site_data, site_name: str = ''):
 
         m_p = re.search('[A-Z0-9]{4,10}-[A-Z0-9]{2,4}', site_data.productNumber, re.IGNORECASE)
 
@@ -438,7 +438,7 @@ class AutoMakerParser:
 
         return apply_str
 
-    def __get_type_replace(self, target_str: str = '', replace_info: data.ReplaceInfoData = None):
+    def __get_type_replace(self, target_str, replace_info):
 
         if replace_info.sourceType == 'text':
             return target_str.replace(replace_info.source, replace_info.destination)
@@ -448,7 +448,7 @@ class AutoMakerParser:
 
 class BjParser:
 
-    def get_actress(self, bj_data: data.BjData = None):
+    def get_actress(self, bj_data):
         actress = ''
         if '201' in bj_data.title and "KOREAN BJ" in bj_data.title:
             match = re.search('[A-Z ]* 201', bj_data.title)
@@ -468,7 +468,7 @@ class BjParser:
 
         return actress, tag
 
-    def get_dest_basename(self, bj_data: data.BjData = None, actress: str = ''):
+    def get_dest_basename(self, bj_data, actress: str = ''):
 
         # basename_ext = os.path.basename(bj_data.downloadLink)
         # _, ext = os.path.splitext(basename_ext)
@@ -483,7 +483,7 @@ class BjParser:
 
         return target_name
 
-    def get_thumbnail_info_list(self, bj_data: data.BjData = None, base_filename: str = ''):
+    def get_thumbnail_info_list(self, bj_data, base_filename: str = ''):
 
         is_filename = False
         thumbnail_info_list = []
