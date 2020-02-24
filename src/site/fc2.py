@@ -26,17 +26,38 @@ class Fc2:
         sleep(1)
 
         site_data = None
-        for main_info in self.driver.find_elements_by_css_selector('.main_info_block'):
-            sleep(1)
-            block_text = main_info.text
-            # print(main_info.text)
-            site_data = self.__get_site_data(block_text.splitlines())
+        header_info = self.driver.find_elements_by_css_selector('.items_article_headerInfo')
+
+        # block_text = header_info.text
+        self.__get_site_data(header_info)
+        # print(main_info.text)
+        # site_data = self.__get_site_data(block_text.splitlines())
 
         self.driver.close()
 
         return site_data
 
-    def __get_site_data(self, lines):
+    def __get_site_data(self, header_info):
+
+        site_data = data.SiteData()
+        li_list = header_info.find_all('li')
+        release_date = header_info.find('div', class_='items_article_Releasedate')
+        if release_date is not None:
+            release_date_str = release_date.find('p').text
+        else:
+            release_date_str = ''
+
+        for li in li_list:
+            if 'by ' in li.text:
+                site_data.maker = li.text.replace('by', '').replace('　', ' ').strip()
+                print('label {}'.format(site_data.maker))
+
+        site_data.streamDate = release_date_str.replace('販売日 : ', '')
+        print('streamDate [{}]'.format(site_data.streamDate))
+
+        return site_data
+
+    def __get_site_data_backup(self, lines):
 
         site_data = data.SiteData()
 
@@ -70,9 +91,12 @@ class Fc2:
         with urllib.request.urlopen(url) as response:
             html = response.read()
             html_soup = BeautifulSoup(html, "html.parser")
-            block_text = html_soup.find('div', class_='main_info_block').text
+            header_info = html_soup.find('div', class_='items_article_headerInfo')
 
-            site_data = self.__get_site_data(block_text.splitlines())
+            # block_text = header_info.text
+            site_data = self.__get_site_data(header_info)
+
+            # site_data = self.__get_site_data(block_text.splitlines())
 
         urllib.request.urlcleanup()
 

@@ -42,13 +42,13 @@ class Ave:
                         if 'スタジオ' in li_span.text:
                             site_data.label = li_a.text
                     else:
-                        if '発売日' in li.text:
+                        if '発売日' in li.text or 'Release Date' in li.text:
                             # print('sell_date li_text {}'.format(li.text))
                             m_date = re.search('[0-9]{1,2}/[0-9]{1,2}/[0-9]{4}', li.text)
                             if m_date:
                                 # print('sell_date2 {}'.format(m_date.group()))
                                 m_date_list = m_date.group().split('/')
-                                site_data.sellDate = '{}-{}-{}'.format(m_date_list[2]
+                                site_data.streamDate = '{}-{}-{}'.format(m_date_list[2]
                                                                        , '{:0>2}'.format(m_date_list[0])
                                                                        , '{:0>2}'.format(m_date_list[1]))
                         if idx == 0:

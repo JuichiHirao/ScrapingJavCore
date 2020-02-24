@@ -1,5 +1,6 @@
 import urllib.request
 from bs4 import BeautifulSoup
+from mysql.connector.errors import DataError
 from datetime import datetime
 from src import tool
 from src import db
@@ -15,20 +16,21 @@ import_parser = common.ImportParser()
 
 # is_checked = True
 is_checked = False
-# is_import = True
-is_import = False
+is_import = True
+# is_import = False
 imports = import_dao.get_where_agreement('WHERE id = -1')
 # imports = import_dao.get_where_agreement('WHERE id = 8658 and filename like \'%【FC2%\'')
-# imports = import_dao.get_where_agreement('WHERE id = 12251')
+# imports = import_dao.get_where_agreement('WHERE id = 15054')
 
 if imports is not None:
     jav_id = imports[0].javId
     jav_where = 'WHERE id in (' + str(jav_id) + ') order by id limit 50'
 else:
-    # jav_where = 'WHERE id in (36830) order by id limit 50'
-    jav_where = 'WHERE is_parse2 < 0 and is_selection = 1 order by post_date '
-    # jav_where = 'WHERE is_selection = 1 and post_date >= "2019-10-14 00:00:00" order by post_date '
-    # jav_where = 'WHERE is_selection = 1 and post_date >= "2019-11-14 00:00:00" order by post_date '
+    jav_where = 'WHERE id in (50636, 50819) order by id limit 50'
+    # jav_where = 'WHERE is_parse2 < 0 and is_selection = 1 order by post_date '
+    # jav_where = 'WHERE is_selection = 1 and post_date >= "2020-01-17 08:50:00" order by post_date '
+    # jav_where = 'WHERE is_selection = 1 and post_date >= "2020-01-10 20:50:00" order by post_date '
+    jav_where = 'WHERE is_selection = 1 and post_date >= "2020-01-29 00:00:00" and makers_id = 835 order by post_date '
 # javs = jav_dao.get_where_agreement('WHERE is_selection = 1 and is_v   parse2 < 0 order by post_date ')
 # javs = jav_dao.get_where_agreement('WHERE is_selection = 1 and search_result is null order by id')
 # javs = jav_dao.get_where_agreement('WHERE is_selection = 1 order by id limit 100')
@@ -78,10 +80,15 @@ for jav in javs:
         #     site_data.print()
 
     actress_name = ''
+    is_changed_p_number = False
     if ng_reason > 0:
         ok_cnt = ok_cnt + 1
         if jav.sellDate is None:
             print('  no sell_date ' + jav.title)
+
+        if jav.productNumber != p_number:
+            jav.productNumber = p_number
+            is_changed_p_number = True
 
         site_data = site_getter.get_info(jav, match_maker)
 
@@ -105,11 +112,15 @@ for jav in javs:
         else:
             detail = site_data.get_detail()
             if not is_checked:
-                jav_dao.update_detail_and_sell_date(detail, site_data.streamDate, jav.id)
-                if is_import and import_data.id > 0:
-                    import_data.detail = detail
-                    import_data.sellDate = site_data.streamDate
-                    # import_dao.update_detail_and_sell_date(detail, site_data.streamDate, import_data.id)
+                try:
+                    jav_dao.update_detail_and_sell_date(detail, site_data.streamDate, jav.id)
+                    if is_import and import_data.id > 0:
+                        import_data.detail = detail
+                        import_data.sellDate = site_data.streamDate
+                        # import_dao.update_detail_and_sell_date(detail, site_data.streamDate, import_data.id)
+                except DataError as de:
+                    print(str(de))
+                    exit(-1)
             # site_data = data.SiteData()
             print('    site found [' + detail + ']')
             result_search = site_getter.get_wiki(jav, match_maker)
@@ -140,7 +151,7 @@ for jav in javs:
                 print('    already set actress [' + jav.actress + '] get_info [' + actress_name + ']')
 
         # product number
-        if p_number != jav.productNumber:
+        if is_changed_p_number:
             print('    change p_number [' + p_number + '] <-- [' + jav.productNumber + ']')
             if not is_checked:
                 jav_dao.update_product_number(jav.id, p_number)
