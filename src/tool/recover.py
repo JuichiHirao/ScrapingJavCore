@@ -30,7 +30,7 @@ class Recover:
         else:
             self.makers = makers
 
-        self.parser = common.AutoMakerParser()
+        self.parser = common.AutoMakerParser(None)
         if site_collect is None:
             self.site_collect = site.SiteInfoCollect()
             self.site_collect.initialize()
@@ -134,7 +134,7 @@ class Recover:
                     self.err_list.append('      HEYのp_number[ ' + hey_p_number + ']だが、HEYのサイトには存在しない ' + jav.title)
                     raise RecoverError('-21でHEYのサイトで詳細が存在しないため発生')
 
-                makers = self.maker_dao.get_where_agreement('WHERE label = %s', (site_data.maker, ))
+                makers = self.maker_dao.get_where_agreement('WHERE label = %s', (site_data.maker,))
 
                 if makers is not None:
                     self.err_list.append('      [' + site_data.streamDate + '] 【' + site_data.maker + '】')
@@ -187,9 +187,14 @@ class Recover:
         #        #     self.jav_dao.update_product_number(jav.id, p_number)
 
         if new_maker is not None:
-            if len(list(filter(lambda maker: maker.matchStr.upper() == new_maker.matchStr.upper(), self.makers))) > 0:
-                self.err_list.append('new_makerのmatch_str[' + new_maker.matchStr + ']は既にscraping.makerに存在')
-                raise RecoverError('new_makerのmatch_strは既にscraping.makerに存在')
+            match_same_maker_list = list(filter(lambda maker: maker.matchStr.upper() == new_maker.matchStr.upper(),
+                                                self.makers))
+            if len(match_same_maker_list):
+                for match_same_maker in match_same_maker_list:
+                    if re.search(match_same_maker.matchName, jav.maker) \
+                            and (len(match_same_maker.matchLabel) > 0 and re.search(match_same_maker.matchLabel, jav.label)):
+                        self.err_list.append('new_makerのmatch_str[' + new_maker.matchStr + ']は既にscraping.makerに存在')
+                        raise RecoverError('new_makerのmatch_strは既にscraping.makerに存在')
         '''
         if new_maker is not None:
             new_maker.print('NEW ')
@@ -197,4 +202,3 @@ class Recover:
                 self.maker_dao.export(new_maker)
         '''
         return new_maker, site_data
-

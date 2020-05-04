@@ -362,7 +362,10 @@ class ProductNumber:
         #   -22 : タイトル内にpNumberは存在、複数件のメーカーが一致
         #   -23 : タイトル内にpNumberらしき文字列【[0-9A-Za-z]*-[0-9A-Za-z]】*が存在しない
         if ng_reason == 0:
-            p_number_2x, match_maker_2x, ng_reason_2x = self.__get_match_maker_force(jav.title + ' ' + jav.package)
+            package = ''
+            if jav.package is not None:
+                package = jav.package
+            p_number_2x, match_maker_2x, ng_reason_2x = self.__get_match_maker_force(jav.title + ' ' + package)
         else:
             ng_reason_2x = 0
             p_number_2x = ''

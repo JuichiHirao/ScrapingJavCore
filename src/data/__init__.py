@@ -20,7 +20,7 @@ class JavData:
         self.downloadFiles = ''
         self.filesInfo = ''
         self.productNumber = ''
-        self.isSelection = False
+        self.isSelection = 0
         self.isParse2 = False
         self.makersId = 0
         self.rating = 0

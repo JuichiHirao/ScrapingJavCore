@@ -225,18 +225,18 @@ class JavDao(mysql_base.MysqlBase):
         sql = 'INSERT INTO jav (title, post_date ' \
                 '  , sell_date, actress, maker, label' \
                 '  , url, product_number, makers_id, is_parse2 ' \
-                '  , files_info ' \
+                '  , files_info, is_selection ' \
                 '  ) ' \
                 ' VALUES(%s, %s' \
                 '  , %s, %s, %s, %s' \
                 '  , %s, %s, %s, %s' \
-                '  , %s ' \
+                '  , %s, %s ' \
                 ' )'
 
         self.cursor.execute(sql, (jav_data.title, jav_data.postDate
                             , jav_data.sellDate, jav_data.actress, jav_data.maker, jav_data.label
                             , jav_data.url, jav_data.productNumber, jav_data.makersId, jav_data.isParse2
-                            , jav_data.filesInfo)
+                            , jav_data.filesInfo, jav_data.isSelection)
                             )
 
         self.conn.commit()

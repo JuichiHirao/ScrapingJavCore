@@ -16,21 +16,23 @@ import_parser = common.ImportParser()
 
 # is_checked = True
 is_checked = False
-is_import = True
-# is_import = False
-imports = import_dao.get_where_agreement('WHERE id = -1')
+# is_import = True
+is_import = False
+# imports = import_dao.get_where_agreement('WHERE id = -1')
 # imports = import_dao.get_where_agreement('WHERE id = 8658 and filename like \'%【FC2%\'')
-# imports = import_dao.get_where_agreement('WHERE id = 15054')
+imports = import_dao.get_where_agreement('WHERE id = 17373')
 
 if imports is not None:
     jav_id = imports[0].javId
     jav_where = 'WHERE id in (' + str(jav_id) + ') order by id limit 50'
 else:
-    jav_where = 'WHERE id in (50636, 50819) order by id limit 50'
+    # jav_where = 'WHERE id in (54315) order by id limit 50'
+    # jav_where = 'WHERE id in (9948) order by id limit 50'
     # jav_where = 'WHERE is_parse2 < 0 and is_selection = 1 order by post_date '
     # jav_where = 'WHERE is_selection = 1 and post_date >= "2020-01-17 08:50:00" order by post_date '
-    # jav_where = 'WHERE is_selection = 1 and post_date >= "2020-01-10 20:50:00" order by post_date '
-    jav_where = 'WHERE is_selection = 1 and post_date >= "2020-01-29 00:00:00" and makers_id = 835 order by post_date '
+    # jav_where = 'WHERE is_selection = 0 and post_date >= "2020-03-25 12:00:00" order by post_date '
+    jav_where = 'WHERE is_selection = 1 and post_date >= "2020-04-15 12:00:00" order by post_date '
+    # jav_where = 'WHERE is_selection = 1 and post_date >= "2020-03-16 12:00:00" and makers_id != 835 order by post_date '
 # javs = jav_dao.get_where_agreement('WHERE is_selection = 1 and is_v   parse2 < 0 order by post_date ')
 # javs = jav_dao.get_where_agreement('WHERE is_selection = 1 and search_result is null order by id')
 # javs = jav_dao.get_where_agreement('WHERE is_selection = 1 order by id limit 100')
@@ -42,7 +44,7 @@ try:
     site_collect = site.SiteInfoCollect()
     site_collect.initialize()
 
-    site_getter = site.SiteInfoGetter(site_collect=site_collect, maker_parser=parser)
+    site_getter = site.SiteInfoGetter(site_collect=site_collect, is_debug=True)
 except:
     print(sys.exc_info())
     exit(-1)
@@ -126,6 +128,9 @@ for jav in javs:
             result_search = site_getter.get_wiki(jav, match_maker)
             print('    result_search [' + result_search + ']')
 
+            if is_import and import_data.id > 0:
+                import_data.searchResult = result_search
+
             wiki_detail_data = site_getter.get_contents_info(jav, result_search)
 
             if wiki_detail_data is not None:
@@ -163,6 +168,7 @@ for jav in javs:
         # detail
         is_changed = False
         if (detail is not None and len(detail) > 0) or is_selldate_changed:
+            sell_date = None
             if is_selldate_changed:
                 try:
                     if '-' in wiki_detail_data.streamDate:
@@ -172,7 +178,6 @@ for jav in javs:
                 except:
                     pass
             else:
-                sell_date = None
                 if site_data is not None:
                     str_sell_date = site_data.streamDate
                     # maker.registeredBy = 'AUTO ' + datetime.now().strftime('%Y-%m-%d')
@@ -235,6 +240,17 @@ for jav in javs:
         else:
             if is_import and not is_checked:
                 import_dao.update(import_data)
+
+        if ng_reason == -4 and len(jav.maker) > 0:
+            try:
+                new_maker, site_data = recover.get_ng_new_maker(p_number, ng_reason, jav)
+                if new_maker is not None:
+                    new_maker.print('NEW ')
+                    if not is_checked:
+                        maker_dao.export(new_maker)
+                    makers.append(new_maker)
+            except tool.recover.RecoverError as rerr:
+                err_list.append(str(rerr))
     else:
         try:
             new_maker, site_data = recover.get_ng_new_maker(p_number, ng_reason, jav)

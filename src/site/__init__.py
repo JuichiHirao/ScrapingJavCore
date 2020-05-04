@@ -55,7 +55,8 @@ class SiteInfoCollect:
 
 class SiteInfoGetter:
 
-    def __init__(self, site_collect: SiteInfoCollect = None, is_debug: bool = False, maker_parser: common.AutoMakerParser() = None):
+    # def __init__(self, site_collect: SiteInfoCollect = None, is_debug: bool = False, maker_parser: common.AutoMakerParser(None) = None):
+    def __init__(self, site_collect, is_debug):
         self.match_sell_date = '[12][0][0-9][0-9][-/][0-1][0-9][-/][0-3][0-9]'
         self.is_debug = is_debug
 
@@ -65,7 +66,7 @@ class SiteInfoGetter:
         else:
             self.site_collect = site_collect
 
-        self.maker_parser = common.AutoMakerParser()
+        self.maker_parser = common.AutoMakerParser(None)
         # self.maker_parser = maker_parser
 
     def get_info(self, jav: data.JavData = None, match_maker: data.MakerData = None):
@@ -143,7 +144,11 @@ class SiteInfoGetter:
 
                 if len(result_search) <= 0:
                     if len(site_list) > 0:
-                        result_search = site_list[0]
+                        for site_info in site_list:
+                            if 'seesaawiki.jp/av_neme/d/' in site_info:
+                                continue
+                            result_search = site_info
+                            break
 
         return result_search
 

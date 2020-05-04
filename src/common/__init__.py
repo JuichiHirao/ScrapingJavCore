@@ -277,7 +277,7 @@ class MatchStrSameError(Exception):
 
 class AutoMakerParser:
 
-    def __init__(self, maker_dao: db.maker.MakerDao = None):
+    def __init__(self, maker_dao):
         self.replace_info_dao = db.replace_info.ReplaceInfoDao()
         self.replace_info_list = self.replace_info_dao.get_where_agreement('WHERE type like \'maker%\'')
 
