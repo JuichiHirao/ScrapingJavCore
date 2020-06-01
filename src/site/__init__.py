@@ -1,4 +1,5 @@
 import urllib.request
+import urllib.error
 import requests
 import re
 from bs4 import BeautifulSoup
@@ -167,12 +168,16 @@ class SiteInfoGetter:
             html = response.text
             html_soup = BeautifulSoup(html, 'html.parser')
         else:
-            with urllib.request.urlopen(result_search_list[1]) as response:
-                html = response.read()
-                html_soup = BeautifulSoup(html, 'html.parser')
+            try:
+                with urllib.request.urlopen(result_search_list[1]) as response:
+                    html = response.read()
+                    html_soup = BeautifulSoup(html, 'html.parser')
+            except urllib.error.HTTPError as err:
+                print('{}'.format(err))
+                return None
 
         if html_soup is None:
-            return ''
+            return None
 
         actress_name = ''
         site_data = None
