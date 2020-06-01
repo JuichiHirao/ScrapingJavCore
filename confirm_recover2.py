@@ -1,5 +1,3 @@
-import urllib.request
-from bs4 import BeautifulSoup
 from mysql.connector.errors import DataError
 from datetime import datetime
 from src import tool
@@ -20,26 +18,41 @@ is_checked = False
 is_import = False
 # imports = import_dao.get_where_agreement('WHERE id = -1')
 # imports = import_dao.get_where_agreement('WHERE id = 8658 and filename like \'%【FC2%\'')
-imports = import_dao.get_where_agreement('WHERE id = 17373')
+imports = None
+
+if is_import:
+    imports = import_dao.get_where_agreement('WHERE id > 18000 and length(filename) <= 0')
 
 if imports is not None:
-    jav_id = imports[0].javId
-    jav_where = 'WHERE id in (' + str(jav_id) + ') order by id limit 50'
+    if len(imports) == 1:
+        jav_id_in = imports[0].javId
+    else:
+        jav_id_in = imports[0].javId
+        for import_data in imports[1:]:
+            if import_data.javId > 0:
+                jav_id_in = '{}, {}'.format(jav_id_in, import_data.javId)
+    javs = jav_dao.get_where_agreement('WHERE id in ({})'.format(jav_id_in))
+    # print(len(javs))
+    # exit(-1)
 else:
     # jav_where = 'WHERE id in (54315) order by id limit 50'
     # jav_where = 'WHERE id in (9948) order by id limit 50'
     # jav_where = 'WHERE is_parse2 < 0 and is_selection = 1 order by post_date '
-    # jav_where = 'WHERE is_selection = 1 and post_date >= "2020-01-17 08:50:00" order by post_date '
-    # jav_where = 'WHERE is_selection = 0 and post_date >= "2020-03-25 12:00:00" order by post_date '
-    jav_where = 'WHERE is_selection = 1 and post_date >= "2020-04-15 12:00:00" order by post_date '
+    jav_where = 'WHERE is_selection = 0 and post_date >= "2020-04-17 08:50:00" order by post_date '
+    # jav_where = 'WHERE is_selection = 1 and post_date >= "2020-05-01 08:50:00" order by post_date '
+    # jav_where = 'WHERE is_selection in (0, 1) and post_date >= "2020-03-25 12:00:00" order by post_date '
+    # jav_where = 'WHERE is_selection = 1 and post_date >= (select post_date from jav where id = 60748) order by post_date '
+    # jav_where = 'WHERE is_selection = 1 and post_date >= "2020-05-01 12:00:00" and makers_id != 835 order by post_date '
     # jav_where = 'WHERE is_selection = 1 and post_date >= "2020-03-16 12:00:00" and makers_id != 835 order by post_date '
-# javs = jav_dao.get_where_agreement('WHERE is_selection = 1 and is_v   parse2 < 0 order by post_date ')
-# javs = jav_dao.get_where_agreement('WHERE is_selection = 1 and search_result is null order by id')
-# javs = jav_dao.get_where_agreement('WHERE is_selection = 1 order by id limit 100')
-javs = jav_dao.get_where_agreement(jav_where)
+    # javs = jav_dao.get_where_agreement('WHERE is_selection = 1 and is_v   parse2 < 0 order by post_date ')
+    # javs = jav_dao.get_where_agreement('WHERE is_selection = 1 and search_result is null order by id')
+    # javs = jav_dao.get_where_agreement('WHERE is_selection = 1 order by id limit 100')
+    javs = jav_dao.get_where_agreement(jav_where)
 
 
 parser = common.AutoMakerParser(maker_dao=maker_dao)
+
+site_getter = None
 try:
     site_collect = site.SiteInfoCollect()
     site_collect.initialize()
@@ -47,6 +60,10 @@ try:
     site_getter = site.SiteInfoGetter(site_collect=site_collect, is_debug=True)
 except:
     print(sys.exc_info())
+    exit(-1)
+
+if site_getter is None:
+    print('site_getter is None')
     exit(-1)
 
 makers = maker_dao.get_all()
