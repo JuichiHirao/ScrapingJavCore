@@ -39,7 +39,8 @@ class Jav2Dao(mysql_base.MysqlBase):
 
     def __get_sql_select(self):
         sql = 'SELECT id ' \
-              '  , title, download_links, kind, url ' \
+              '  , title, post_date, package, thumbnail' \
+              '  , download_links, files_info, kind, url ' \
               '  , detail ' \
               '  , created_at, updated_at ' \
               '  FROM jav2 '
@@ -53,15 +54,28 @@ class Jav2Dao(mysql_base.MysqlBase):
             jav = data.Jav2Data()
             jav.id = row[0]
             jav.title = row[1]
-            jav.downloadLinks = row[2]
-            jav.kind = row[3]
-            jav.url = row[4]
-            jav.detail = row[5]
-            jav.createdAt = row[6]
-            jav.updatedAt = row[7]
+            jav.postDate = row[2]
+            jav.package = row[3]
+            jav.thumbnail = row[4]
+            jav.downloadLinks = row[5]
+            jav.filesInfo = row[6]
+            jav.kind = row[7]
+            jav.url = row[8]
+            jav.detail = row[9]
+            jav.createdAt = row[10]
+            jav.updatedAt = row[11]
             javs.append(jav)
 
         return javs
+
+    def delete_by_id(self, id):
+
+        sql = 'delete from jav2 WHERE id = %s'
+
+        self.cursor.execute(sql, (id, ))
+        print('    jav2 delete id [{}]'.format(id))
+
+        self.conn.commit()
 
     def is_exist(self, title: str = '', kind: str = '') -> bool:
 

@@ -9,6 +9,7 @@ class JavData:
         self.id = -1
         self.url = ''
         self.title = ''
+        self.name = ''
         self.postDate = None
         self.package = ''
         self.thumbnail = ''
