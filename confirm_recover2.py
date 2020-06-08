@@ -35,12 +35,12 @@ if imports is not None:
     # print(len(javs))
     # exit(-1)
 else:
-    # jav_where = 'WHERE id in (54315) order by id limit 50'
+    # jav_where = 'WHERE id in (63866) order by id limit 50'
     # jav_where = 'WHERE id in (9948) order by id limit 50'
     # jav_where = 'WHERE is_parse2 < 0 and is_selection = 1 order by post_date '
-    jav_where = 'WHERE is_selection = 0 and post_date >= "2020-04-17 08:50:00" order by post_date '
-    # jav_where = 'WHERE is_selection = 1 and post_date >= "2020-05-01 08:50:00" order by post_date '
-    # jav_where = 'WHERE is_selection in (0, 1) and post_date >= "2020-03-25 12:00:00" order by post_date '
+    # jav_where = 'WHERE is_selection = 0 and post_date >= "2020-04-17 08:50:00" order by post_date '
+    jav_where = 'WHERE is_selection = 1 and post_date >= "2020-05-01 08:50:00" order by post_date '
+    # jav_where = 'WHERE is_selection in (0, 1) and post_date >= "2020-04-25 12:00:00" order by post_date '
     # jav_where = 'WHERE is_selection = 1 and post_date >= (select post_date from jav where id = 60748) order by post_date '
     # jav_where = 'WHERE is_selection = 1 and post_date >= "2020-05-01 12:00:00" and makers_id != 835 order by post_date '
     # jav_where = 'WHERE is_selection = 1 and post_date >= "2020-03-16 12:00:00" and makers_id != 835 order by post_date '

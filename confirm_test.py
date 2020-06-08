@@ -3,6 +3,7 @@ from src import common
 from src import data
 from bs4 import BeautifulSoup
 import requests
+from src import tool
 
 '''
 match_maker = data.MakerData()
@@ -14,6 +15,12 @@ copy_text = common.CopyText()
 title = copy_text.get_title('[FHD]ssni-391 隣に住む引きこもりの幼馴染に私、毎日アニコスを着させられて… 夢乃あいか', 'SSNI-391')
 print(title)
 '''
+
+api = tool.slack.SlackApi()
+response = api.post(['testtesttest', 'abcdef'], '@javscing')
+print(response)
+
+exit(-1)
 
 env = common.Environment()
 
