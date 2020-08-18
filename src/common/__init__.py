@@ -19,10 +19,12 @@ class DriverNotFoundError(Exception):
 
 class Environment:
 
-    def __init__(self):
+    def __init__(self, headless: bool = True):
 
         self.options = Options()
-        self.options.add_argument('--headless')
+
+        if headless:
+            self.options.add_argument('--headless')
 
         self.driver = None
         self.imagePath = ''
