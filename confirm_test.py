@@ -1,6 +1,7 @@
 import re
 from src import common
 from src import data
+from src import site
 from bs4 import BeautifulSoup
 import requests
 from src import tool
@@ -16,37 +17,48 @@ title = copy_text.get_title('[FHD]ssni-391 隣に住む引きこもりの幼馴�
 print(title)
 '''
 
-api = tool.slack.SlackApi()
-response = api.post(['testtesttest', 'abcdef'], '@javscing')
-print(response)
+# api = tool.slack.SlackApi()
+# response = api.post(['testtesttest', 'abcdef'], '@javscing')
+# print(response)
 
-exit(-1)
+# exit(-1)
 
 env = common.Environment()
 
 # print(' [' + env.get_exist_image_path('102044785_0016cbb5.jpg') + ']')
 print(' [' + env.get_exist_image_path('4785_0016cbb5.jpg') + ']')
 
-url = 'https://shecool.net/av-wiki/fanza-shirouto/276kitaike-av-actress-name-301-400/'
+url = 'https://www.roguelibrarian.com/yss/'
 site_data = data.SiteData()
 
 response = requests.get(url)
 html = response.text
 html_soup = BeautifulSoup(html, 'html.parser')
 
-contents_list = html_soup.findAll('div', class_='s-contents')
+contents_list = html_soup.findAll('article', class_='hentry')
 # print('contents_list ' + str(len(contents_list)))
 
 match_sell_date = '[12][0][0-9][0-9][-/][0-1][0-9][-/][0-3][0-9]'
 is_match = False
+mgs = site.mgs.Mgs()
 for idx, div_c in enumerate(contents_list):
-    p_c = div_c.find('p')
+    product_c = div_c.find('h2')
+    a_c = div_c.find('a', class_='actress_meta_box')
+    a_product_c = div_c.find('a', class_='p-thumbnail')
+    mgs_url = a_product_c['href']
+    site_info = mgs.get_info('418YSS-29')
+    site_info.print()
+    continue
+    # print(div_c)
+    # print(p_c.text)
+    print('[{}] [{}] [{}]'.format(product_c.text.strip(), a_c.text, a_product_c['href']))
     # a_name = div_c.find('a')
     # if a_name is not None:
     #     actress = a_name.text
     #     print('  a_text ' + str(a_name_text.text))
 
     # str_p = p_c.text
+    continue
     """
     0  [ <span class="important-bold">女優名：</span>]
     1  [ 香坂澪]

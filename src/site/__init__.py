@@ -190,6 +190,9 @@ class SiteInfoGetter:
         if 'sougouwiki.com' in result_search.strip():
             site_data = self.__get_info_sougouwiki(jav, html_soup)
             # site_data.print('    ')
+        if 'roguelibrarian.com' in result_search.strip():
+            site_data = self.__get_info_roguelibrarian(jav, html_soup)
+            # site_data.print('    ')
         if 'seesaawiki.jp' in result_search.strip():
             site_data = self.__get_info_seesaawiki(jav, html_soup)
             if len(site_data.actress) <= 0:
@@ -298,6 +301,41 @@ class SiteInfoGetter:
             if is_match:
                 break
 
+        if is_match is False:
+            site_data = None
+
+        return site_data
+
+    def __get_info_roguelibrarian(self, jav: data.JavData = None, html_soup: BeautifulSoup = None):
+
+        site_data = data.SiteData()
+
+        contents_list = html_soup.findAll('article', class_='hentry')
+
+        is_match = False
+        for idx, div_c in enumerate(contents_list):
+            product_c = div_c.find('h2')
+            if product_c is None:
+                break
+
+            if jav.productNumber in product_c.text.strip():
+                a_c = div_c.find('a', class_='actress_meta_box')
+                site_data.actress = a_c.text
+                is_match = True
+
+            if is_match:
+                break
+
+        if is_match is False:
+            page_c = html_soup.find('div', class_='pager_right')
+            site_data = None
+            if page_c is not None:
+                next_page_c = page_c.find('a')
+                with urllib.request.urlopen(next_page_c['href']) as response:
+                    html = response.read()
+                    html_soup = BeautifulSoup(html, 'html.parser')
+                    site_data = self.__get_info_roguelibrarian(jav, html_soup)
+
         return site_data
 
     def __get_info_sougouwiki(self, jav: data.JavData = None, html_soup: BeautifulSoup = None):
@@ -385,6 +423,9 @@ class SiteInfoGetter:
             if is_match:
                 break
 
+        if is_match is False:
+            site_data.actress = ''
+
         return site_data
 
     def __get_info_seesaawiki_div(self, jav: data.JavData = None, html_soup: BeautifulSoup = None):
@@ -409,6 +450,9 @@ class SiteInfoGetter:
 
             if is_match:
                 break
+
+        if is_match is False:
+            site_data.actress = ''
 
         return site_data
 

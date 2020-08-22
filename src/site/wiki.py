@@ -115,6 +115,9 @@ class Google:
                 if 'shecool.net' in url:
                     site_list.append('shecool.net' + ' ' + url)
 
+                if 'roguelibrarian.com' in url:
+                    site_list.append('roguelibrarian.com' + ' ' + url)
+
                 if 'sougouwiki.com' in url and '/d/' in url:
                     site_list.append('総合wiki' + ' ' + url)
 
