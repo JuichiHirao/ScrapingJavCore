@@ -271,6 +271,57 @@ class SiteInfoGetter:
 
     def __get_info_avwikich(self, jav: data.JavData = None, html_soup: BeautifulSoup = None):
 
+        site_data = self.__get_info_avwikich_p1(jav, html_soup)
+
+        if site_data is not None:
+            return site_data
+
+        site_data = self.__get_info_avwikich_p2(jav, html_soup)
+
+        if site_data is not None:
+            return site_data
+
+    def __get_info_avwikich_p2(self, jav: data.JavData = None, html_soup: BeautifulSoup = None):
+
+        site_data = data.SiteData()
+        div_the_content_list = html_soup.findAll('div', id='the-content')
+
+        re_jav_product_number = re.sub('^[0-9]{3}', '', jav.productNumber.replace('-', '[0]{0,4}')).lower()
+        # print(re_jav_product_number)
+        for div_the_content in div_the_content_list:
+
+            site_data = data.SiteData()
+            product_number = ''
+            if div_the_content is not None:
+                p_c = div_the_content.find('p')
+                span_c = div_the_content.find('span')
+                # print(span_c.text)
+                p_list = p_c.text.split('\n')
+                # print(p_list)
+                for line_data in p_list:
+                    if '出演女優名' in line_data:
+                        site_data.actress = re.sub('出演女優名\(名前\)：', '', line_data)
+                    if '配信開始日' in line_data:
+                        site_data.streamDate = re.sub('配信開始日：', '', line_data)
+                    if '品番' in line_data:
+                        product_number = re.sub('品番：', '', line_data)
+
+                # print('{} {} {}'.format(product_number, site_data.actress, site_data.streamDate))
+                # print(p_c.text)
+
+            # print(jav_product_number)
+            if len(product_number) > 0:
+                if re.search(re_jav_product_number, product_number.lower()):
+                    break
+                else:
+                    site_data = None
+            else:
+                site_data = None
+
+        return site_data
+
+    def __get_info_avwikich_p1(self, jav: data.JavData = None, html_soup: BeautifulSoup = None):
+
         site_data = data.SiteData()
 
         contents_list = html_soup.findAll('div', class_='entry-content')
