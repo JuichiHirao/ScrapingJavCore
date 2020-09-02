@@ -330,7 +330,7 @@ class SiteData:
         print_list.append(indent + '  label      [' + self.label + ']')
         print_list.append(indent + '  duration   [' + self.duration + ']')
         print_list.append(indent + '  pNumber    [' + self.productNumber + ']')
-        print_list.append(indent + '  streamDate [' + self.streamDate + ']')
+        print_list.append('{}  streamDate [{}]'.format(indent, self.streamDate))
         print_list.append(indent + '  sellDate   [' + self.sellDate + ']')
         print_list.append(indent + '  series     [' + self.series + ']')
         print_list.append(indent + '  fileSize   [' + self.fileSize + ']')

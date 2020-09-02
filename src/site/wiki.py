@@ -47,7 +47,7 @@ class Site:
 class Google:
 
     def __init__(self, max_result: int = 5):
-        self.main_url = 'https://www.google.com/search?q=wiki+av+'
+        self.main_url = 'https://www.google.com/search?q={}+wiki+av'
         self.opener = urllib.request.build_opener()
         self.opener.addheaders = [('User-Agent',
                                    'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1941.0 Safari/537.36')]
@@ -94,7 +94,7 @@ class Google:
 
     def get_info(self, product_number):
 
-        url = self.main_url + product_number
+        url = self.main_url.format(product_number)
 
         urllib.request.install_opener(self.opener)
 
@@ -126,6 +126,9 @@ class Google:
 
                 if 'avwikich.com' in url:
                     site_list.append('AVWikiCh' + ' ' + url)
+
+                if 'av-wiki.net' in url:
+                    site_list.append('av-wiki.net' + ' ' + url)
 
                 if idx > 8:
                     break

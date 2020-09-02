@@ -2,6 +2,7 @@ import urllib.request
 import urllib.error
 import requests
 import re
+from datetime import datetime
 from bs4 import BeautifulSoup
 from . import fc2
 from . import wiki
@@ -167,6 +168,12 @@ class SiteInfoGetter:
             response.encoding = 'euc_jp'
             html = response.text
             html_soup = BeautifulSoup(html, 'html.parser')
+            # if 'av-wiki.net' in url:
+        elif 'av-wiki.net' in result_search.strip():
+            response = requests.get(result_search_list[1])
+            response.encoding = 'utf_8'
+            html = response.text
+            html_soup = BeautifulSoup(html, 'html.parser')
         else:
             try:
                 with urllib.request.urlopen(result_search_list[1]) as response:
@@ -189,6 +196,9 @@ class SiteInfoGetter:
             # site_data.print('    ')
         if 'sougouwiki.com' in result_search.strip():
             site_data = self.__get_info_sougouwiki(jav, html_soup)
+            # site_data.print('    ')
+        if 'av-wiki.net' in result_search.strip():
+            site_data = self.__get_info_avwiki_net(jav, html_soup)
             # site_data.print('    ')
         if 'roguelibrarian.com' in result_search.strip():
             site_data = self.__get_info_roguelibrarian(jav, html_soup)
@@ -266,6 +276,61 @@ class SiteInfoGetter:
                     if m:
                         site_data.streamDate = m.group()
                         break
+
+        return site_data
+
+    def __get_info_avwiki_net(self, jav: data.JavData = None, html_soup: BeautifulSoup = None, recursion_depth: int = 1):
+
+        re_jav_product_number = re.sub('^[0-9]{3}', '', jav.productNumber.replace('-', '[0]{0,4}')).lower()
+        product_number = ''
+
+        is_match = False
+
+        link_wrap_list = html_soup.findAll('div', class_='link-wrap')
+        for link_wrap in link_wrap_list:
+            site_data = data.SiteData()
+
+            li_actress = link_wrap.find('li', class_='actress-name')
+            if li_actress is not None:
+                # print(li_actress.text)
+                a_actress = li_actress.find('a')
+                if a_actress is not None:
+                    site_data.actress = a_actress.text
+
+            li_haishin_date = link_wrap.find('li', class_='haishin-date')
+            if li_haishin_date is not None:
+                # print(li_haishin_date.text)
+                stream_str_date = datetime.strptime(li_haishin_date.text, '%Y年%m月%d日')
+                site_data.streamDate = datetime.strftime(stream_str_date, '%Y-%m-%d')
+
+            li_fanza_num = link_wrap.find('li', class_='fanza-num')
+            if li_fanza_num is not None:
+                product_number = li_fanza_num.text
+
+            if len(product_number) > 0:
+                if re.search(re_jav_product_number, product_number.lower()):
+                    is_match = True
+                    # print(li_actress)
+                    break
+                else:
+                    site_data = None
+            else:
+                site_data = None
+
+        if is_match is False:
+            if recursion_depth > 8:
+                return None
+            if recursion_depth > 8:
+                return None
+            next_page_c = html_soup.find('a', class_='next page-numbers')
+            site_data = None
+            if next_page_c is not None:
+                response = requests.get(next_page_c['href'])
+                response.raise_for_status()
+                response.encoding = 'utf_8'  # 文字コード
+                html = response.text
+                html_soup = BeautifulSoup(html, 'html.parser')
+                site_data = self.__get_info_avwiki_net(jav, html_soup, recursion_depth+1)
 
         return site_data
 
