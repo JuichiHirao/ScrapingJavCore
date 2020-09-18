@@ -95,6 +95,7 @@ class Google:
     def get_info(self, product_number):
 
         url = self.main_url.format(product_number)
+        print('Google {}'.format(url))
 
         urllib.request.install_opener(self.opener)
 

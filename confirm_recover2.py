@@ -17,11 +17,13 @@ is_checked = False
 # is_import = True
 is_import = False
 # imports = import_dao.get_where_agreement('WHERE id = -1')
-# imports = import_dao.get_where_agreement('WHERE id = 8658 and filename like \'%【FC2%\'')
+imports = import_dao.get_where_agreement('WHERE id = 8658 and filename like \'%【FC2%\'')
 imports = None
 
 if is_import:
-    imports = import_dao.get_where_agreement('WHERE id > 18000 and length(filename) <= 0')
+    # imports = import_dao.get_where_agreement('WHERE id > 18000 and length(filename) <= 0')
+    # imports = import_dao.get_where_agreement('WHERE id > 18000')
+    imports = import_dao.get_where_agreement('WHERE id = 21202')
 
 if imports is not None:
     if len(imports) == 1:
@@ -35,13 +37,14 @@ if imports is not None:
     # print(len(javs))
     # exit(-1)
 else:
-    # jav_where = 'WHERE id in (63866) order by id limit 50'
+    # jav_where = 'WHERE id in (69659, 69660, 69661, 69662, 70953) order by id limit 50'
+    # jav_where = 'WHERE id in (71532) order by id limit 50'
     # jav_where = 'WHERE id in (9948) order by id limit 50'
     # jav_where = 'WHERE is_parse2 < 0 and is_selection = 1 order by post_date '
-    # jav_where = 'WHERE is_selection = 0 and post_date >= "2020-04-17 08:50:00" order by post_date '
-    jav_where = 'WHERE is_selection = 1 and post_date >= "2020-05-01 08:50:00" order by post_date '
+    jav_where = 'WHERE is_selection = 0 and post_date >= "2020-04-17 08:50:00" order by post_date '
+    # jav_where = 'WHERE is_selection = 1 and post_date >= "2020-07-01 08:50:00" order by post_date '
     # jav_where = 'WHERE is_selection in (0, 1) and post_date >= "2020-04-25 12:00:00" order by post_date '
-    # jav_where = 'WHERE is_selection = 1 and post_date >= (select post_date from jav where id = 60748) order by post_date '
+    # jav_where = 'WHERE is_selection = 1 and post_date >= (select post_date from jav where id = 73057) order by post_date '
     # jav_where = 'WHERE is_selection = 1 and post_date >= "2020-05-01 12:00:00" and makers_id != 835 order by post_date '
     # jav_where = 'WHERE is_selection = 1 and post_date >= "2020-03-16 12:00:00" and makers_id != 835 order by post_date '
     # javs = jav_dao.get_where_agreement('WHERE is_selection = 1 and is_v   parse2 < 0 order by post_date ')
@@ -170,7 +173,9 @@ for jav in javs:
                 import_data.tag = actress_name
         else:
             if len(actress_name) > 0 and len(jav.actress.strip()) > 0:
-                print('    already set actress [' + jav.actress + '] get_info [' + actress_name + ']')
+                msg = '【{}】 already set actress [{}] get_info [{}]'.format(jav.productNumber, jav.actress, actress_name)
+                print(msg)
+                err_list.append(msg)
 
         # product number
         if is_changed_p_number:

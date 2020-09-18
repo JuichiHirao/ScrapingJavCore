@@ -435,6 +435,9 @@ class SiteInfoGetter:
                 break
 
             if jav.productNumber in product_c.text.strip():
+                citi_link = div_c.find('blockquote', class_='entry-title')
+                if citi_link is not None:
+                    site_data = self.site_collect.mgs.get_info(jav.productNumber, citi_link['cite'])
                 a_c = div_c.find('a', class_='actress_meta_box')
                 site_data.actress = a_c.text
                 is_match = True
@@ -447,10 +450,11 @@ class SiteInfoGetter:
             site_data = None
             if page_c is not None:
                 next_page_c = page_c.find('a')
-                with urllib.request.urlopen(next_page_c['href']) as response:
-                    html = response.read()
-                    html_soup = BeautifulSoup(html, 'html.parser')
-                    site_data = self.__get_info_roguelibrarian(jav, html_soup)
+                if next_page_c is not None:
+                    with urllib.request.urlopen(next_page_c['href']) as response:
+                        html = response.read()
+                        html_soup = BeautifulSoup(html, 'html.parser')
+                        site_data = self.__get_info_roguelibrarian(jav, html_soup)
 
         return site_data
 
