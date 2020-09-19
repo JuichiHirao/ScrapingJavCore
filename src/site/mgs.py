@@ -18,9 +18,12 @@ class Mgs:
         self.driver = self.env.get_driver()
         self.import_dao = db.import_dao.ImportDao()
 
-    def __get_info_from_chrome(self, product_number):
+    def __get_info_from_chrome(self, product_number, url: str = ''):
 
-        self.driver.get(self.main_url + product_number + '/')
+        if len(url) > 0:
+            self.driver.get(url)
+        else:
+            self.driver.get(self.main_url + product_number + '/')
 
         detail = ''
         sell_date = ''
@@ -91,9 +94,9 @@ class Mgs:
 
         return site_data
 
-    def get_info(self, product_number):
+    def get_info(self, product_number, url: str = ''):
 
-        return self.__get_info_from_chrome(product_number)
+        return self.__get_info_from_chrome(product_number, url)
 
     def exist_product_number(self, product_number):
 

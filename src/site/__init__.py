@@ -1,6 +1,8 @@
 import urllib.request
+import urllib.error
 import requests
 import re
+from datetime import datetime
 from bs4 import BeautifulSoup
 from . import fc2
 from . import wiki
@@ -166,13 +168,23 @@ class SiteInfoGetter:
             response.encoding = 'euc_jp'
             html = response.text
             html_soup = BeautifulSoup(html, 'html.parser')
+            # if 'av-wiki.net' in url:
+        elif 'av-wiki.net' in result_search.strip():
+            response = requests.get(result_search_list[1])
+            response.encoding = 'utf_8'
+            html = response.text
+            html_soup = BeautifulSoup(html, 'html.parser')
         else:
-            with urllib.request.urlopen(result_search_list[1]) as response:
-                html = response.read()
-                html_soup = BeautifulSoup(html, 'html.parser')
+            try:
+                with urllib.request.urlopen(result_search_list[1]) as response:
+                    html = response.read()
+                    html_soup = BeautifulSoup(html, 'html.parser')
+            except urllib.error.HTTPError as err:
+                print('{}'.format(err))
+                return None
 
         if html_soup is None:
-            return ''
+            return None
 
         actress_name = ''
         site_data = None
@@ -184,6 +196,12 @@ class SiteInfoGetter:
             # site_data.print('    ')
         if 'sougouwiki.com' in result_search.strip():
             site_data = self.__get_info_sougouwiki(jav, html_soup)
+            # site_data.print('    ')
+        if 'av-wiki.net' in result_search.strip():
+            site_data = self.__get_info_avwiki_net(jav, html_soup)
+            # site_data.print('    ')
+        if 'roguelibrarian.com' in result_search.strip():
+            site_data = self.__get_info_roguelibrarian(jav, html_soup)
             # site_data.print('    ')
         if 'seesaawiki.jp' in result_search.strip():
             site_data = self.__get_info_seesaawiki(jav, html_soup)
@@ -261,7 +279,113 @@ class SiteInfoGetter:
 
         return site_data
 
+    def __get_info_avwiki_net(self, jav: data.JavData = None, html_soup: BeautifulSoup = None, recursion_depth: int = 1):
+
+        re_jav_product_number = re.sub('^[0-9]{3}', '', jav.productNumber.replace('-', '[0]{0,4}')).lower()
+        product_number = ''
+
+        is_match = False
+
+        link_wrap_list = html_soup.findAll('div', class_='link-wrap')
+        for link_wrap in link_wrap_list:
+            site_data = data.SiteData()
+
+            li_actress = link_wrap.find('li', class_='actress-name')
+            if li_actress is not None:
+                # print(li_actress.text)
+                a_actress = li_actress.find('a')
+                if a_actress is not None:
+                    site_data.actress = a_actress.text
+
+            li_haishin_date = link_wrap.find('li', class_='haishin-date')
+            if li_haishin_date is not None:
+                # print(li_haishin_date.text)
+                stream_str_date = datetime.strptime(li_haishin_date.text, '%Y年%m月%d日')
+                site_data.streamDate = datetime.strftime(stream_str_date, '%Y-%m-%d')
+
+            li_fanza_num = link_wrap.find('li', class_='fanza-num')
+            if li_fanza_num is not None:
+                product_number = li_fanza_num.text
+
+            if len(product_number) > 0:
+                if re.search(re_jav_product_number, product_number.lower()):
+                    is_match = True
+                    # print(li_actress)
+                    break
+                else:
+                    site_data = None
+            else:
+                site_data = None
+
+        if is_match is False:
+            if recursion_depth > 8:
+                return None
+            if recursion_depth > 8:
+                return None
+            next_page_c = html_soup.find('a', class_='next page-numbers')
+            site_data = None
+            if next_page_c is not None:
+                response = requests.get(next_page_c['href'])
+                response.raise_for_status()
+                response.encoding = 'utf_8'  # 文字コード
+                html = response.text
+                html_soup = BeautifulSoup(html, 'html.parser')
+                site_data = self.__get_info_avwiki_net(jav, html_soup, recursion_depth+1)
+
+        return site_data
+
     def __get_info_avwikich(self, jav: data.JavData = None, html_soup: BeautifulSoup = None):
+
+        site_data = self.__get_info_avwikich_p1(jav, html_soup)
+
+        if site_data is not None:
+            return site_data
+
+        site_data = self.__get_info_avwikich_p2(jav, html_soup)
+
+        if site_data is not None:
+            return site_data
+
+    def __get_info_avwikich_p2(self, jav: data.JavData = None, html_soup: BeautifulSoup = None):
+
+        site_data = data.SiteData()
+        div_the_content_list = html_soup.findAll('div', id='the-content')
+
+        re_jav_product_number = re.sub('^[0-9]{3}', '', jav.productNumber.replace('-', '[0]{0,4}')).lower()
+        # print(re_jav_product_number)
+        for div_the_content in div_the_content_list:
+
+            site_data = data.SiteData()
+            product_number = ''
+            if div_the_content is not None:
+                p_c = div_the_content.find('p')
+                span_c = div_the_content.find('span')
+                # print(span_c.text)
+                p_list = p_c.text.split('\n')
+                # print(p_list)
+                for line_data in p_list:
+                    if '出演女優名' in line_data:
+                        site_data.actress = re.sub('出演女優名\(名前\)：', '', line_data)
+                    if '配信開始日' in line_data:
+                        site_data.streamDate = re.sub('配信開始日：', '', line_data)
+                    if '品番' in line_data:
+                        product_number = re.sub('品番：', '', line_data)
+
+                # print('{} {} {}'.format(product_number, site_data.actress, site_data.streamDate))
+                # print(p_c.text)
+
+            # print(jav_product_number)
+            if len(product_number) > 0:
+                if re.search(re_jav_product_number, product_number.lower()):
+                    break
+                else:
+                    site_data = None
+            else:
+                site_data = None
+
+        return site_data
+
+    def __get_info_avwikich_p1(self, jav: data.JavData = None, html_soup: BeautifulSoup = None):
 
         site_data = data.SiteData()
 
@@ -292,6 +416,45 @@ class SiteInfoGetter:
 
             if is_match:
                 break
+
+        if is_match is False:
+            site_data = None
+
+        return site_data
+
+    def __get_info_roguelibrarian(self, jav: data.JavData = None, html_soup: BeautifulSoup = None):
+
+        site_data = data.SiteData()
+
+        contents_list = html_soup.findAll('article', class_='hentry')
+
+        is_match = False
+        for idx, div_c in enumerate(contents_list):
+            product_c = div_c.find('h2')
+            if product_c is None:
+                break
+
+            if jav.productNumber in product_c.text.strip():
+                citi_link = div_c.find('blockquote', class_='entry-title')
+                if citi_link is not None:
+                    site_data = self.site_collect.mgs.get_info(jav.productNumber, citi_link['cite'])
+                a_c = div_c.find('a', class_='actress_meta_box')
+                site_data.actress = a_c.text
+                is_match = True
+
+            if is_match:
+                break
+
+        if is_match is False:
+            page_c = html_soup.find('div', class_='pager_right')
+            site_data = None
+            if page_c is not None:
+                next_page_c = page_c.find('a')
+                if next_page_c is not None:
+                    with urllib.request.urlopen(next_page_c['href']) as response:
+                        html = response.read()
+                        html_soup = BeautifulSoup(html, 'html.parser')
+                        site_data = self.__get_info_roguelibrarian(jav, html_soup)
 
         return site_data
 
@@ -380,6 +543,9 @@ class SiteInfoGetter:
             if is_match:
                 break
 
+        if is_match is False:
+            site_data.actress = ''
+
         return site_data
 
     def __get_info_seesaawiki_div(self, jav: data.JavData = None, html_soup: BeautifulSoup = None):
@@ -404,6 +570,9 @@ class SiteInfoGetter:
 
             if is_match:
                 break
+
+        if is_match is False:
+            site_data.actress = ''
 
         return site_data
 

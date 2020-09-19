@@ -9,7 +9,8 @@ from .. import data
 class Tokyohot:
 
     def __init__(self):
-        self.main_url = 'https://my.tokyo-hot.com/'
+        # self.main_url = 'https://my.tokyo-hot.com/'
+        self.main_url = 'https://www.tokyo-hot.com/'
         self.opener = urllib.request.build_opener()
         self.opener.addheaders = [('User-Agent',
                                    'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1941.0 Safari/537.36')]
@@ -22,7 +23,7 @@ class Tokyohot:
 
         site_data = None
 
-        url = self.main_url + 'product/' + product_number.lower()
+        url = '{}product/{}/'.format(self.main_url, product_number.lower())
         urllib.request.install_opener(self.opener)
 
         try:
@@ -34,13 +35,13 @@ class Tokyohot:
                 key = ''
                 for dtdd in contents_info.find_all(['dt', 'dd']):
                     if dtdd.name == 'dt':
-                        if '配信開始日' in dtdd.text:
+                        if '配信開始日' in dtdd.text or 'release date' in dtdd.text.lower():
                             key = 'streamDate'
                             continue
-                        if 'レーベル' in dtdd.text:
+                        if 'レーベル' in dtdd.text or 'label' in dtdd.text.lower():
                             key = 'label'
                             continue
-                        if '収録時間' in dtdd.text:
+                        if '収録時間' in dtdd.text or 'duration' in dtdd.text.lower():
                             key = 'duration'
                             continue
                     if dtdd.name == 'dd':

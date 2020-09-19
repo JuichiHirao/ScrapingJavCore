@@ -2,6 +2,7 @@ import re
 import urllib.request
 import urllib.error
 import urllib.parse
+from selenium.common import exceptions
 from bs4 import BeautifulSoup
 from .. import common
 from .. import db
@@ -116,62 +117,77 @@ class Fanza:
 
     def __parse_site_data(self, url):
 
-        site_data = None
-        with urllib.request.urlopen(url) as response:
-            html = response.read()
-            html_soup = BeautifulSoup(html, "html.parser")
+        self.driver.get(url)
 
-            table_info = html_soup.find('table', class_='mg-b20')
-            # tr_all = table_info.findAll('tr')
-            tr_all = table_info.findAll('tr')
-            site_data = data.SiteData()
-            h1_title = html_soup.find('h1', id='title')
-            if h1_title:
-                site_data.title = h1_title.text
-            before_name = ''
-            for idx, tr in enumerate(tr_all):
-                for idx_sub, td in enumerate(tr.find_all_next('td')):
-                    # print(str(idx) + ' ' + str(idx_sub) + ' 【' + str(td.text) + '】')
+        h1 = None
+        try:
+            h1 = self.driver.find_element_by_tag_name('h1')
+        except exceptions.NoSuchElementException:
+            print('h1 tag not found exceptions.NoSuchElementException')
 
-                    if before_name == '発売日':
-                        site_data.streamDate = td.text.strip()
-                        before_name = ''
-                    if re.search('発売日', td.text) or re.search('配信.*日', td.text):
-                        before_name = '発売日'
+        if h1 is None:
+            print('h1 tag none')
+            return None
 
-                    if before_name == 'duration':
-                        site_data.duration = td.text.replace('\n', ' ').strip()
-                        before_name = ''
-                    if re.search('収録時間', td.text):
-                        before_name = 'duration'
+        if '年齢認証' in h1.text:
+            over18yes = self.driver.find_element_by_css_selector('.ageCheck__link--r18')
+            # over18yes = self.driver.find_element_by_id('id')
+            over18yes.click()
 
-                    if before_name == 'actress':
-                        site_data.actress = td.text.replace('\n', '').strip()
-                        before_name = ''
-                    if re.search('出演者', td.text):
-                        before_name = 'actress'
+        html = self.driver.page_source
+        html_soup = BeautifulSoup(html, "html.parser")
 
-                    if before_name == 'maker':
-                        site_data.maker = td.text.strip()
-                        before_name = ''
-                    if re.search('メーカー', td.text):
-                        before_name = 'maker'
+        table_info = html_soup.find('table', class_='mg-b20')
+        # tr_all = table_info.findAll('tr')
+        tr_all = table_info.findAll('tr')
+        site_data = data.SiteData()
+        h1_title = html_soup.find('h1', id='title')
+        if h1_title:
+            site_data.title = h1_title.text
+        before_name = ''
+        for idx, tr in enumerate(tr_all):
+            for idx_sub, td in enumerate(tr.find_all_next('td')):
+                # print(str(idx) + ' ' + str(idx_sub) + ' 【' + str(td.text) + '】')
 
-                    if before_name == 'label':
-                        site_data.label = td.text.strip()
-                        before_name = ''
-                    if re.search('レーベル', td.text):
-                        before_name = 'label'
+                if before_name == '発売日':
+                    site_data.streamDate = td.text.strip()
+                    before_name = ''
+                if re.search('発売日', td.text) or re.search('配信.*日', td.text):
+                    before_name = '発売日'
 
-                    if before_name == 'series':
-                        site_data.series = td.text.strip()
-                        before_name = ''
-                    if re.search('シリーズ', td.text):
-                        before_name = 'series'
+                if before_name == 'duration':
+                    site_data.duration = td.text.replace('\n', ' ').strip()
+                    before_name = ''
+                if re.search('収録時間', td.text):
+                    before_name = 'duration'
 
-                # print('tr end')
-                # site_data.print()
-                break
+                if before_name == 'actress':
+                    site_data.actress = td.text.replace('\n', '').strip()
+                    before_name = ''
+                if re.search('出演者', td.text):
+                    before_name = 'actress'
+
+                if before_name == 'maker':
+                    site_data.maker = td.text.strip()
+                    before_name = ''
+                if re.search('メーカー', td.text):
+                    before_name = 'maker'
+
+                if before_name == 'label':
+                    site_data.label = td.text.strip()
+                    before_name = ''
+                if re.search('レーベル', td.text):
+                    before_name = 'label'
+
+                if before_name == 'series':
+                    site_data.series = td.text.strip()
+                    before_name = ''
+                if re.search('シリーズ', td.text):
+                    before_name = 'series'
+
+            # print('tr end')
+            # site_data.print()
+            break
 
         # site_data.print()
 

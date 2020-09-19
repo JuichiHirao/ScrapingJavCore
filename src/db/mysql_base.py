@@ -4,7 +4,7 @@ import mysql.connector
 
 class MysqlBase:
 
-    def __init__(self, table_name=''):
+    def __init__(self, table_name='', dbname=''):
         self.max_time = 0
         self.user = ''
         self.password = ''
@@ -21,16 +21,20 @@ class MysqlBase:
             for row in max_time():
                 self.max_time = int(row[0])
 
+        if len(dbname) > 0:
+            self.dbname = dbname
+
         self.cursor = self.conn.cursor()
 
     def get_conn(self):
 
         with open('credentials.yml') as file:
-            obj = yaml.load(file)
+            obj = yaml.load(file, Loader=yaml.FullLoader)
             self.user = obj['user']
             self.password = obj['password']
             self.hostname = obj['hostname']
-            self.dbname = obj['dbname']
+            if len(self.dbname) <= 0:
+                self.dbname = obj['dbname']
 
         return mysql.connector.connect(user=self.user, password=self.password,
                                        host=self.hostname, database=self.dbname)

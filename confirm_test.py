@@ -1,88 +1,132 @@
 import re
+import urllib.request
+import urllib.error
 from src import common
 from src import data
+from src.site import mgs
+from datetime import datetime
 from bs4 import BeautifulSoup
 import requests
+from src import tool
 
-'''
-match_maker = data.MakerData()
-match_maker.matchName = 'S1 NO.1 STYLE'
-match_maker.matchStr = 'SSNI'
-match_maker.matchProductNumber = ''
-copy_text = common.CopyText()
-# title = copy_text.get_title('[FHD6m]ssni-391 隣に住む引きこもりの幼馴染に私、毎日アニコスを着させられて… 夢乃あいか', 'SSNI-391')
-title = copy_text.get_title('[FHD]ssni-391 隣に住む引きこもりの幼馴染に私、毎日アニコスを着させられて… 夢乃あいか', 'SSNI-391')
-print(title)
-'''
+class SiteInfoGetter:
 
-env = common.Environment()
+    def __init__(self):
 
-# print(' [' + env.get_exist_image_path('102044785_0016cbb5.jpg') + ']')
-print(' [' + env.get_exist_image_path('4785_0016cbb5.jpg') + ']')
+        url = 'https://www.roguelibrarian.com/orenoshirouto'
+        # url = 'https://av-wiki.net/fanza-shirouto/sqb/'
+        # url = 'http://sougouwiki.com/d/S-Cute%20Girls%208'
+        # url = 'https://av-wiki.net/fanza-shirouto/szdr/'
+        # url = 'https://av-wiki.net/fanza-shirouto/sqb/'
+        # url = 'https://avwikich.com/?p=172538'
+        # url = 'https://avwikich.com/?cat=7062'
+        response = requests.get(url)
+        response.raise_for_status()
+        response.encoding = 'utf_8'  # 文字コード
+        html = response.text
+        html_soup = BeautifulSoup(html, 'html.parser')
+        jav = data.JavData()
+        jav.productNumber = '230OREC-561'
+        # jav.productNumber = '742_rui_03'
+        # jav.productNumber = '380SQB-033'
+        # jav.productNumber = '448SZDR-003'
+        # jav.productNumber = '742'
+        # jav.productNumber = 'HUNTA-827'
+        # site_data = self.__get_info_avwikich(jav, html_soup)
+        site_data = self.__get_info_roguelibrarian(jav, html_soup)
+        if site_data is not None:
+            site_data.print()
 
-url = 'https://shecool.net/av-wiki/fanza-shirouto/276kitaike-av-actress-name-301-400/'
-site_data = data.SiteData()
+    def __get_info_roguelibrarian(self, jav: data.JavData = None, html_soup: BeautifulSoup = None):
 
-response = requests.get(url)
-html = response.text
-html_soup = BeautifulSoup(html, 'html.parser')
+        site_data = data.SiteData()
 
-contents_list = html_soup.findAll('div', class_='s-contents')
-# print('contents_list ' + str(len(contents_list)))
+        contents_list = html_soup.findAll('article', class_='hentry')
 
-match_sell_date = '[12][0][0-9][0-9][-/][0-1][0-9][-/][0-3][0-9]'
-is_match = False
-for idx, div_c in enumerate(contents_list):
-    p_c = div_c.find('p')
-    # a_name = div_c.find('a')
-    # if a_name is not None:
-    #     actress = a_name.text
-    #     print('  a_text ' + str(a_name_text.text))
-
-    # str_p = p_c.text
-    """
-    0  [ <span class="important-bold">女優名：</span>]
-    1  [ 香坂澪]
-    2  [ <br/>]
-    3  [ <span class="small">澪　33歳<br/>品番：<span class="fanza-num">kitaike301</span> – <span class="mgs-num">
-         <a href="https://www.mgstage.com/product/product_detail/276KITAIKE-347/?aff=QTWJYS6BP24YCHBPG2PDC83284" rel="nofollow" target="_blank">276KITAIKE-347</a></span>
-         <br/>配信開始日：2018-09-14</span>]
-    """
-    if '276KITAIKE-401' not in p_c.text:
-        continue
-
-    # print(p_c.text)
-    actress = ''
-    streamDate = None
-    for idx, elem in enumerate(p_c.childGenerator()):
-        if idx == 1:
-            actress = str(elem)
-        if idx == 3:
-            str_elem = str(elem)
-            # span_c = elem.findAll('span')
-            if re.search('[12][0][0-9][0-9][-/][0-1][0-9][-/][0-3][0-9]', str_elem):
-                m = re.search(match_sell_date, str_elem)
-                # print('avwiki match sell_date ' + str(m.group()))
-                streamDate = m.group()
+        is_match = False
+        for idx, div_c in enumerate(contents_list):
+            product_c = div_c.find('h2')
+            if product_c is None:
                 break
-    # print(p_c.text)
-    # print("title     [{}]".format(title))
-    print("actress   [{}]".format(actress))
-    print("stremDate [{}]".format(streamDate))
-    """
-    span_c = div_c.findAll('span')
-    for span_text in span_c:
-        print('span ' + span_text.text)
-        if '女優' in span_text.text:
-            actress_name = re.sub('女優名.*：', '', span_text.text)
-            print('actress ' + actress_name)
-        # print('  span_text ' + span_text.text)
-        if re.search('[12][0][0-9][0-9][-/][0-1][0-9][-/][0-3][0-9]', span_text.text):
-            m = re.search(match_sell_date, span_text.text)
-            # print('avwiki match sell_date ' + str(m.group()))
-            streamDate = m.group()
-    """
 
-# print(actress)
-# print(streamDate)
+            if jav.productNumber in product_c.text.strip():
+                a_c = div_c.find('a', class_='actress_meta_box')
+                # print(div_c)
+                citi_link = div_c.find('blockquote', class_='entry-title')
+                print(citi_link['cite'])
+                if 'product_detail' in citi_link['cite']:
+                    site_data = mgs.mgs.get_info(jav.productNumber)
+                site_data.actress = a_c.text
+                is_match = True
 
+            if is_match:
+                break
+
+        if is_match is False:
+            page_c = html_soup.find('div', class_='pager_right')
+            site_data = None
+            if page_c is not None:
+                next_page_c = page_c.find('a')
+                with urllib.request.urlopen(next_page_c['href']) as response:
+                    html = response.read()
+                    html_soup = BeautifulSoup(html, 'html.parser')
+                    site_data = self.__get_info_roguelibrarian(jav, html_soup)
+
+        return site_data
+
+    # def __get_info_scute(self):
+    def __get_info_sougouwiki(self, jav: data.JavData = None, html_soup: BeautifulSoup = None):
+
+        site_data = data.SiteData()
+
+        # main_table = html_soup.find('table', class_='edit')
+        main_tables = html_soup.findAll('table')
+        td_data_list = ['', '', '', '', '']  # 0 pNum, 1 img, 2 title, 3 a_name, 4 date
+        is_match = False
+        for table in main_tables:
+            # td_data_list = [] # 0 pNum, 1 img, 2 title, 3 a_name, 4 date
+            tr_list = table.findAll('tr')
+            for tr in tr_list:
+                td_list = tr.findAll('td', recursive=False)
+                # print(tr)
+                # a_link = tr.find('a', class_='outlink')
+                # print(a_link['href'])
+
+                idx = 0
+                for td in td_list:
+                    a_link = td.find('a', class_='outlink')
+                    if a_link is not None:
+                        href_link = a_link['href']
+                        if 'jpg' not in href_link:
+                            if 'www.s-cute.com' in href_link:
+                                print(href_link)
+                    else:
+                        print(str(idx) + ' ' + td.text)
+                    td_data_list[idx] = td.text
+                    # td_data_list.append(td.text)
+                    if jav.productNumber in td.text:
+                        # str_euc = tr.text
+                        # print(tr.text)
+                        # print(unicode(tr.text, "utf-8"))
+                        is_match = True
+                    idx = idx + 1
+
+                    if idx >= 5:
+                        break
+
+                if is_match:
+                    # print(str(td_data_list))
+                    site_data.actress = td_data_list[3]
+                    site_data.streamDate = td_data_list[4]
+                    break
+                else:
+                    site_data.actress = ''
+
+            if is_match:
+                break
+
+        return site_data
+
+
+if __name__ == "__main__":
+    getter = SiteInfoGetter()
