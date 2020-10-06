@@ -69,6 +69,24 @@ class SiteInfoGetter:
         self.maker_parser = common.AutoMakerParser(None)
         # self.maker_parser = maker_parser
 
+    def get_google_search_result_list(self, search_url):
+        search_result_list = []
+        with urllib.request.urlopen(search_url) as response:
+            html = response.read()
+            google_result_soup = BeautifulSoup(html, "html.parser")
+            div_search = google_result_soup.select('#search')
+            div_rc_list = div_search[0].findAll('div', class_='rc')
+            # div_r_list = google_result_soup.findAll('div', class_='r')
+
+            for idx, div_rc in enumerate(div_rc_list):
+                a_div_r = div_rc.find('a')
+                if a_div_r is None:
+                    continue
+                url = a_div_r['href']
+                if url is not None:
+                    search_result_list.append(url)
+
+
     def get_info(self, jav: data.JavData = None, match_maker: data.MakerData = None):
 
         site_data = None

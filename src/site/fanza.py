@@ -29,17 +29,23 @@ class Fanza:
         split_p_number = p_number.split('-')
         urllib.request.install_opener(self.opener)
 
+        search_result_list = []
         try:
             with urllib.request.urlopen(url) as response:
                 html = response.read()
                 google_result_soup = BeautifulSoup(html, "html.parser")
-                div_r_list = google_result_soup.findAll('div', class_='r')
+                div_search = google_result_soup.select('#search')
+                div_rc_list = div_search[0].findAll('div', class_='rc')
+                # div_r_list = google_result_soup.findAll('div', class_='r')
 
-                for idx, div_r in enumerate(div_r_list):
-                    a_div_r = div_r.find('a')
+                for idx, div_rc in enumerate(div_rc_list):
+                    a_div_r = div_rc.find('a')
+                    if a_div_r is None:
+                        continue
                     url = a_div_r['href']
-
-                    site_data = self.__get_and_check_site_data(p_number, split_p_number, url)
+                    if url is not None:
+                        search_result_list.append(url)
+                        site_data = self.__get_and_check_site_data(p_number, split_p_number, url)
 
                     if site_data is not None:
                         break
@@ -70,17 +76,23 @@ class Fanza:
 
         urllib.request.install_opener(self.opener)
 
+        search_result_list = []
         try:
             with urllib.request.urlopen(url) as response:
                 html = response.read()
                 google_result_soup = BeautifulSoup(html, "html.parser")
-                div_r_list = google_result_soup.findAll('div', class_='r')
+                div_search = google_result_soup.select('#search')
+                div_rc_list = div_search[0].findAll('div', class_='rc')
+                # div_r_list = google_result_soup.findAll('div', class_='r')
 
-                for idx, div_r in enumerate(div_r_list):
-                    a_div_r = div_r.find('a')
+                for idx, div_rc in enumerate(div_rc_list):
+                    a_div_r = div_rc.find('a')
+                    if a_div_r is None:
+                        continue
                     url = a_div_r['href']
-
-                    site_data = self.__get_and_check_site_data(p_number, split_p_number, url)
+                    if url is not None:
+                        search_result_list.append(url)
+                        site_data = self.__get_and_check_site_data(p_number, split_p_number, url)
 
                     if site_data is not None:
                         break
@@ -116,62 +128,78 @@ class Fanza:
 
     def __parse_site_data(self, url):
 
-        site_data = None
-        with urllib.request.urlopen(url) as response:
-            html = response.read()
-            html_soup = BeautifulSoup(html, "html.parser")
+        self.driver.get(url)
 
-            table_info = html_soup.find('table', class_='mg-b20')
-            # tr_all = table_info.findAll('tr')
-            tr_all = table_info.findAll('tr')
-            site_data = data.SiteData()
-            h1_title = html_soup.find('h1', id='title')
-            if h1_title:
-                site_data.title = h1_title.text
-            before_name = ''
-            for idx, tr in enumerate(tr_all):
-                for idx_sub, td in enumerate(tr.find_all_next('td')):
-                    # print(str(idx) + ' ' + str(idx_sub) + ' 【' + str(td.text) + '】')
+        h1 = None
+        try:
+            h1 = self.driver.find_element_by_tag_name('h1')
+        except exceptions.NoSuchElementException:
+            print('h1 tag not found exceptions.NoSuchElementException')
 
-                    if before_name == '発売日':
+        if h1 is None:
+            print('h1 tag none')
+            return None
+
+        if '年齢認証' in h1.text:
+            over18yes = self.driver.find_element_by_css_selector('.ageCheck__link--r18')
+            # over18yes = self.driver.find_element_by_id('id')
+            over18yes.click()
+
+        html = self.driver.page_source
+        html_soup = BeautifulSoup(html, "html.parser")
+
+        table_info = html_soup.find('table', class_='mg-b20')
+        # tr_all = table_info.findAll('tr')
+        tr_all = table_info.findAll('tr')
+        site_data = data.SiteData()
+        h1_title = html_soup.find('h1', id='title')
+        if h1_title:
+            site_data.title = h1_title.text
+        before_name = ''
+        for idx, tr in enumerate(tr_all):
+            for idx_sub, td in enumerate(tr.find_all_next('td')):
+                # print(str(idx) + ' ' + str(idx_sub) + ' 【' + str(td.text) + '】')
+
+                if before_name == '発売日':
+                    if len(td.text) <= 15:
                         site_data.streamDate = td.text.strip()
-                        before_name = ''
-                    if re.search('発売日', td.text) or re.search('配信.*日', td.text):
-                        before_name = '発売日'
+                    before_name = ''
+                if re.search('発売日', td.text) or re.search('配信.*日', td.text):
+                    before_name = '発売日'
 
-                    if before_name == 'duration':
-                        site_data.duration = td.text.replace('\n', ' ').strip()
-                        before_name = ''
-                    if re.search('収録時間', td.text):
-                        before_name = 'duration'
+                if before_name == 'duration':
+                    site_data.duration = td.text.replace('\n', ' ').strip()
+                    before_name = ''
+                if re.search('収録時間', td.text):
+                    before_name = 'duration'
 
-                    if before_name == 'actress':
-                        site_data.actress = td.text.replace('\n', '').strip()
-                        before_name = ''
-                    if re.search('出演者', td.text):
-                        before_name = 'actress'
+                if before_name == 'actress':
+                    site_data.actress = td.text.replace('\n', '').strip()
+                    before_name = ''
+                if re.search('出演者', td.text):
+                    before_name = 'actress'
 
-                    if before_name == 'maker':
-                        site_data.maker = td.text.strip()
-                        before_name = ''
-                    if re.search('メーカー', td.text):
-                        before_name = 'maker'
+                if before_name == 'maker':
+                    site_data.maker = td.text.strip()
+                    before_name = ''
+                if re.search('メーカー', td.text):
+                    before_name = 'maker'
 
-                    if before_name == 'label':
-                        site_data.label = td.text.strip()
-                        before_name = ''
-                    if re.search('レーベル', td.text):
-                        before_name = 'label'
+                if before_name == 'label':
+                    site_data.label = td.text.strip()
+                    before_name = ''
+                if re.search('レーベル', td.text):
+                    before_name = 'label'
 
-                    if before_name == 'series':
-                        site_data.series = td.text.strip()
-                        before_name = ''
-                    if re.search('シリーズ', td.text):
-                        before_name = 'series'
+                if before_name == 'series':
+                    site_data.series = td.text.strip()
+                    before_name = ''
+                if re.search('シリーズ', td.text):
+                    before_name = 'series'
 
-                # print('tr end')
-                # site_data.print()
-                break
+            # print('tr end')
+            # site_data.print()
+            break
 
         # site_data.print()
 
