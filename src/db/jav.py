@@ -80,6 +80,15 @@ class JavDao(mysql_base.MysqlBase):
 
         return javs
 
+    def delete_by_id(self, id):
+
+        sql = 'delete from jav WHERE id = %s'
+
+        self.cursor.execute(sql, (id, ))
+        print('    jav delete id [{}]'.format(id))
+
+        self.conn.commit()
+
     def is_exist(self, title: str) -> bool:
 
         if title is None or len(title) <= 0:

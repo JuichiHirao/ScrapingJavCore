@@ -2,6 +2,7 @@ import re
 import urllib.request
 import urllib.error
 import urllib.parse
+from selenium.common import exceptions
 from bs4 import BeautifulSoup
 from .. import common
 from .. import db
@@ -164,6 +165,7 @@ class Fanza:
                     if len(td.text) <= 15:
                         site_data.streamDate = td.text.strip()
                     before_name = ''
+
                 if re.search('発売日', td.text) or re.search('配信.*日', td.text):
                     before_name = '発売日'
 
