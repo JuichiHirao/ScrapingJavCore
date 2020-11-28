@@ -30,6 +30,7 @@ class EntryRegisterJav:
         self.p_number_tool = tool.p_number.ProductNumber()
         self.env = common.Environment(True)
         self.driver = self.env.get_driver()
+        # self.store_path = 'C:\mydata\jav-save\201120-2'
         self.store_path = 'C:\mydata\jav-save'
         self.html_save_path = 'C:\mydata'
 
@@ -47,9 +48,6 @@ class EntryRegisterJav:
             exit(-1)
 
         self.recover = tool.recover.Recover(site_collect=self.site_collect, makers=self.makers)
-
-        # self.is_check = True
-        self.is_check = False
 
     def __download_image(self, driver, link):
 
@@ -163,68 +161,6 @@ class EntryRegisterJav:
 
         return html_file_list
 
-    def register_page(self):
-
-        html_file_list = self.__get_target_page_list()
-
-        for html_pathname in html_file_list:
-            # html_pathname = os.path.join(html_save_path, html_file)
-            self.__scraping_execute(html_pathname)
-
-    def __set_site_info(self, jav, match_maker):
-
-        if jav.isParse2 <= 0:
-            return
-
-        site_data = self.site_getter.get_info(jav, match_maker)
-
-        result_search = ''
-        detail = ''
-        actress_name = ''
-        is_selldate_changed = False
-        if site_data is None:
-            if match_maker.name == 'SITE':
-                result_search = self.site_getter.get_wiki(jav, match_maker)
-
-                if len(result_search.strip()) > 0:
-                    print('    site result_search [' + result_search + ']')
-                    self.jav_dao.update_search_result(result_search.strip(), jav.id)
-                else:
-                    print('    site result not found ')
-            else:
-                self.err_list.append('id [' + str(jav.id) + '] site_data is None 【' + jav.title + '】')
-        else:
-            detail = site_data.get_detail()
-            try:
-                self.jav_dao.update_detail_and_sell_date(detail, site_data.streamDate, jav.id)
-            except DataError as de:
-                print(str(de))
-                print(traceback.format_exc())
-
-            # site_data = data.SiteData()
-            print('    site found [' + detail + ']')
-            result_search = self.site_getter.get_wiki(jav, match_maker)
-            print('    result_search [' + result_search + ']')
-
-            wiki_detail_data = self.site_getter.get_contents_info(jav, result_search)
-
-            if wiki_detail_data is not None:
-                actress_name = wiki_detail_data.actress
-                if jav.sellDate is None:
-                    if len(wiki_detail_data.streamDate) > 0:
-                        print('sell_date ' + wiki_detail_data.streamDate)
-                        is_selldate_changed = True
-                if len(actress_name) > 0 >= len(jav.actress):
-                    print('    change actress [' + actress_name + '] <-- [' + jav.actress + ']')
-                    self.jav_dao.update_actress(jav.id, actress_name)
-
-        # FC2 label
-        if match_maker is not None and (match_maker.id == 835 or match_maker.id == 255):
-            if site_data is not None and jav.label != site_data.maker:
-                self.jav_dao.update_maker_label(jav.maker, site_data.maker, jav.id)
-
-        return
-
     def __get_img_file(self, img_tag):
         dest_pathname = ''
         filename = ''
@@ -239,7 +175,7 @@ class EntryRegisterJav:
             else:
                 print('not found src img_tag')
         else:
-            m_src_jpg = re.search("src=\".*jpg\"", str(img_tag))
+            m_src_jpg = re.search("src=\".*(jpg|png)\"", str(img_tag))
             if m_src_jpg:
                 filename = m_src_jpg.group().replace('src="', '').replace('"', '')
             else:
@@ -258,121 +194,85 @@ class EntryRegisterJav:
 
         return pathname, dest_pathname, filename
 
+    def register_page(self):
+
+        html_file_list = self.__get_target_page_list()
+
+        for html_pathname in html_file_list:
+            # html_pathname = os.path.join(html_save_path, html_file)
+            self.__scraping_execute(html_pathname)
+
     def __scraping_execute(self, html_pathname):
 
-        print('\n\n\n' + html_pathname + '\n\n\n')
+        # print('\n\n\n' + html_pathname + '\n\n\n')
         soup = BeautifulSoup(open(html_pathname, encoding='utf-8'), 'html.parser')
 
         hentry_list = soup.find_all('div', class_='hentry')
-        print('{}'.format(len(hentry_list)))
+        print('{} {}'.format(len(hentry_list), html_pathname))
 
         p_tool = tool.p_number.ProductNumber(is_log_print=True)
         for entry in hentry_list:
-            jav = data.JavData()
+            title = ''
             for h2 in entry.find('h2'):
-                jav.title = h2.text
-                jav.url = h2['href']
-                # for a in h2.find_all('a'):
-                # print(jav.url)
+                title = h2.text
+                # url = h2['href']
                 break
 
-            title_exist = self.jav_dao.is_exist(jav.title)
+            jav_id = self.jav_dao.get_exist_id(title)
+            # title_exist = self.jav_dao.is_exist(jav.title)
 
-            is_exist = False
-            if title_exist:
-                print('title exist ' + jav.title)
-                is_exist = True
-                # continue
+            if jav_id <= 0:
+                print('[{}]のデータなし'.format(title))
+                continue
 
-            # if bool("[VR3K]" in jav.title) or bool("【VR】" in jav.title):
-            #     continue
+            javs = self.jav_dao.get_where_agreement('WHERE id = {}'.format(jav_id))
 
-            lines = entry.text.splitlines()
+            if len(javs) <= 0:
+                print('jav.id[{}]のデータなし'.format(javs))
+                continue
 
-            for one in lines:
-                if len(one.strip()) <= 0:
-                    continue
+            elif len(javs) > 1:
+                print('jav.id[{}]の複数{}個データ存在'.format(jav_id, len(javs)))
+                continue
 
-                if "発売日" in one:
-                    str_date = jav.get_date(one)
-                    if len(str_date) > 0:
-                        jav.sellDate = jav.get_date(one)
+            jav = javs[0]
 
-                if "出演者" in one:
-                    jav.actress = jav.get_text(one)
-                if "メーカー" in one:
-                    jav.maker = jav.get_text(one)
-                if "レーベル" in one:
-                    jav.label = jav.get_text(one)
-
-            for span in entry.find_all('div', class_='post-info-top'):
-                str_date = span.find('a').text
-                str_time = span.find('a')['title']
-                # June 29, 2018 7:42 am
-                str_datetime = str_date + ' ' + str_time
-                jav.postDate = datetime.strptime(str_datetime, '%B %d, %Y %I:%M %p')
-                # print(post_date)
-
-            jav.productNumber, match_maker, jav.isParse2 = p_tool.parse(jav, True)
-            # jav.productNumber, match_maker, jav.isParse2 = self.p_number_tool.parse(jav, True)
-            if jav.isParse2 < 0:
-                self.err_list.append('  ' + str(jav.isParse2) + ' [' + jav.productNumber + '] ' + jav.title)
-
-            if bool("[VR3K]" in jav.title) or bool("【VR】" in jav.title):
-                self.err_list.append(
-                    '  VRなので、対象外に設定 ' + str(jav.isParse2) + ' [' + jav.productNumber + '] ' + jav.title)
-                # no_target_cnt = no_target_cnt + 1
-                jav.isSelection = -1
-
-            if match_maker is not None:
-                jav.makersId = match_maker.id
-
-            if not self.is_check:
-                if not is_exist:
-                    self.jav_dao.export(jav)
-            else:
-                print('is_check console output export')
-
-            print(html_pathname + '\n')
-            jav.print()
-
-            jav.id = self.jav_dao.get_exist_id(jav.title)
-            # package ファイルをローカルからローカルへコピー
-            div_entry = entry.find('div', class_='entry')
-            # img_tag = div_entry.find('img')
-            src_pathname, dest_pathname, filename = self.__get_img_file(div_entry.find('img'))
-            print('{} <-- {}\n  {}'.format(dest_pathname, src_pathname, div_entry))
-            if len(dest_pathname) > 0:
-                if not self.is_check:
+            img_tag = ''
+            filename = ''
+            if jav.package is None or len(jav.package) <= 0:
+                print('package start [{}] {}'.format(jav.id, jav.title))
+                # package ファイルをローカルからローカルへコピー
+                div_entry = entry.find('div', class_='entry')
+                img_tag = div_entry.find('img')
+                src_pathname, dest_pathname, filename = self.__get_img_file(img_tag)
+                if len(dest_pathname) > 0:
                     shutil.copy2(src_pathname, dest_pathname)
                     self.jav_dao.update_package(jav.id, filename)
 
-            if len(dest_pathname) <= 0:
-                self.err_list.append('[{}] package なし {}'.format(jav.id, jav.title))
+                if len(filename) <= 0:
+                    message = '[{}] package 再取得失敗 {}\n    {}'.format(jav.id, jav.title, img_tag)
+                    print(message)
+                    self.err_list.append(message)
 
-            # thumbnail ファイルをネットから取得
-            a_list = entry.find_all('a')
-            thumbnail_files = []
-            for a in a_list:
-                if 'https://pixhost' in a['href']:
-                    thumbnail_link = a['href']
-                    links = []
-                    print(thumbnail_link)
-                    links.append(thumbnail_link)
-                    if not self.is_check:
+            if jav.thumbnail is None or len(jav.thumbnail) <= 0:
+                print('thubmnail start [{}] {}'.format(jav.id, jav.title))
+                # thumbnail ファイルをネットから取得
+                a_list = entry.find_all('a')
+                thumbnail_files = []
+                thumbnail_link = ''
+                for a in a_list:
+                    if 'https://pixhost' in a['href']:
+                        thumbnail_link = a['href']
+                        links = []
+                        print(thumbnail_link)
+                        links.append(thumbnail_link)
                         thumbnail_files = self.__download_thumbnails(links)
-                    if len(thumbnail_files) > 0:
-                        if jav.id > 0:
-                            if not self.is_check:
+                        if len(thumbnail_files) > 0:
+                            if jav.id > 0:
                                 self.jav_dao.update_thumbnail(jav.id, thumbnail_files)
-                            else:
-                                print('is_check console copy thumbnail {}'.format(thumbnail_files))
 
-            if not self.is_check:
-                self.__set_site_info(jav, match_maker)
-
-            if len(thumbnail_files) <= 0:
-                self.err_list.append('[{}] thubmanilなし {}'.format(jav.id, jav.title))
+                if len(thumbnail_files) <= 0:
+                    self.err_list.append('[{}] thubmanil再取得失敗 {}\n    {}'.format(jav.id, jav.title, thumbnail_link))
 
         for err in self.err_list:
             print(err)
@@ -381,4 +281,6 @@ class EntryRegisterJav:
 if __name__ == '__main__':
     entry_register = EntryRegisterJav()
     entry_register.register_page()
+    # package_file = 'C:\mydata\\' + './Maddawg JAV - page 4_files/172406389_230oretd-796.jpg'
+    # print(os.path.isfile(package_file))
 
