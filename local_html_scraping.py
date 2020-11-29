@@ -33,6 +33,9 @@ class EntryRegisterJav:
         self.store_path = 'C:\mydata\jav-save'
         self.html_save_path = 'C:\mydata'
 
+        self.slack_api = tool.slack.SlackApi()
+        # self.slack_api.post('test', '@javscraping')
+
         self.parser = common.AutoMakerParser(maker_dao=self.maker_dao)
 
         self.site_getter = None
@@ -50,6 +53,10 @@ class EntryRegisterJav:
 
         # self.is_check = True
         self.is_check = False
+
+        self.register_count = 0
+        self.err_package_count = 0
+        self.err_thumbnail_count = 0
 
     def __download_image(self, driver, link):
 
@@ -82,67 +89,58 @@ class EntryRegisterJav:
 
         return filename
 
-    def __download_thumbnails(self, links):
+    def __download_thumbnail(self, link):
 
-        arr_dl_files = []
-        for link in links:
-            try:
-                self.driver.get(link)
-            except WebDriverException as e:
-                sleep(10)
-                continue
+        if link is None or len(link) <= 0:
+            return False, ''
 
-            # <a style="color: blue; font-size: 40px; text-decoration: underline; cursor: pointer;" class="continue">Continue to your image</a>
-            try:
-                sleep(3)
-                self.driver.find_element_by_class_name('continue').click()
-                sleep(3)
+        try:
+            self.driver.get(link)
+        except WebDriverException as e:
+            sleep(10)
+            return
 
-                self.driver.switch_to.window(self.driver.window_handles[1])
-                sleep(5)
-                thumbnail_file = self.__download_image(self.driver, link)
-                if thumbnail_file is not None:
-                    self.driver.close()  # 遷移先のウィンドウを閉じる。特に必要なければ記述の必要なし
-                    arr_dl_files.append(thumbnail_file)
-                    all_handles = self.driver.window_handles
-                    for win in all_handles:
-                        print('  close after switch window ' + str(win))
-                        self.driver.switch_to.window(win)
-                        break
-                else:
-                    all_handles = self.driver.window_handles
+        thumbnail_file = ''
+        # <a style="color: blue; font-size: 40px; text-decoration: underline; cursor: pointer;" class="continue">Continue to your image</a>
+        try:
+            sleep(3)
+            self.driver.find_element_by_class_name('continue').click()
+            sleep(3)
 
-                    for win in all_handles:
-                        print('  win ' + str(win))
-                        self.driver.switch_to.window(win)
-                        dl_filename = self.__download_image(self.driver, link)
-                        arr_dl_files.append(dl_filename)
-                        break
+            self.driver.switch_to.window(self.driver.window_handles[1])
+            sleep(5)
+            thumbnail_file = self.__download_image(self.driver, link)
+            if thumbnail_file is not None:
+                self.driver.close()  # 遷移先のウィンドウを閉じる。特に必要なければ記述の必要なし
+                all_handles = self.driver.window_handles
+                for win in all_handles:
+                    print('  close after switch window ' + str(win))
+                    self.driver.switch_to.window(win)
+                    break
+            else:
+                all_handles = self.driver.window_handles
 
-            except:
-                # print(traceback.format_exc())
-                try:
-                    print('  not popup page')
-                    dl_filename = self.__download_image(self.driver, link)
-                    arr_dl_files.append(dl_filename)
+                for win in all_handles:
+                    print('  win ' + str(win))
+                    self.driver.switch_to.window(win)
+                    thumbnail_file = self.__download_image(self.driver, link)
                     break
 
-                except:
-                    print('  except thumbnail file 404 not found')
+        except:
+            # print(traceback.format_exc())
+            try:
+                print('  not popup page')
+                thumbnail_file = self.__download_image(self.driver, link)
+            except:
+                print('  except thumbnail file 404 not found')
 
         is_download = True
 
-        for filename in arr_dl_files:
-            pathname = os.path.join(self.store_path, filename)
-            if not os.path.exists(pathname):
-                is_download = False
-                break
+        pathname = os.path.join(self.store_path, thumbnail_file)
+        if not os.path.exists(pathname):
+            is_download = False
 
-        dl_filenames = ''
-        if is_download:
-            dl_filenames = ' '.join(arr_dl_files)
-
-        return dl_filenames
+        return is_download, thumbnail_file
 
     def __get_target_page_list(self):
         start_page = 'Maddawg JAV.html'
@@ -170,6 +168,14 @@ class EntryRegisterJav:
         for html_pathname in html_file_list:
             # html_pathname = os.path.join(html_save_path, html_file)
             self.__scraping_execute(html_pathname)
+
+        javs = self.jav_dao.get_where_agreement("WHERE is_selection = 0")
+        if javs is None:
+            javs = []
+        message = '未処理 {}件 新規登録 {}件 err package {}件、thumbnail {}件'.format(len(javs), self.register_count
+                                                                , self.err_package_count, self.err_thumbnail_count)
+        print(message)
+        self.slack_api.post(message, '@javscraping')
 
     def __set_site_info(self, jav, match_maker):
 
@@ -323,12 +329,15 @@ class EntryRegisterJav:
                     '  VRなので、対象外に設定 ' + str(jav.isParse2) + ' [' + jav.productNumber + '] ' + jav.title)
                 # no_target_cnt = no_target_cnt + 1
                 jav.isSelection = -1
+            else:
+                jav.isSelection = 0
 
             if match_maker is not None:
                 jav.makersId = match_maker.id
 
             if not self.is_check:
                 if not is_exist:
+                    self.register_count = self.register_count + 1
                     self.jav_dao.export(jav)
             else:
                 print('is_check console output export')
@@ -348,6 +357,7 @@ class EntryRegisterJav:
                     self.jav_dao.update_package(jav.id, filename)
 
             if len(dest_pathname) <= 0:
+                self.err_package_count = self.err_package_count + 1
                 self.err_list.append('[{}] package なし {}'.format(jav.id, jav.title))
 
             # thumbnail ファイルをネットから取得
@@ -355,23 +365,28 @@ class EntryRegisterJav:
             thumbnail_files = []
             for a in a_list:
                 if 'https://pixhost' in a['href']:
-                    thumbnail_link = a['href']
-                    links = []
-                    print(thumbnail_link)
-                    links.append(thumbnail_link)
+                    is_download = False
+                    thumbnail_file = ''
                     if not self.is_check:
-                        thumbnail_files = self.__download_thumbnails(links)
-                    if len(thumbnail_files) > 0:
-                        if jav.id > 0:
-                            if not self.is_check:
-                                self.jav_dao.update_thumbnail(jav.id, thumbnail_files)
-                            else:
-                                print('is_check console copy thumbnail {}'.format(thumbnail_files))
+                        is_download, thumbnail_file = self.__download_thumbnail(a['href'])
+
+                    if is_download:
+                        thumbnail_files.append(thumbnail_file)
+
+            if len(thumbnail_files) > 0:
+                if jav.id > 0:
+                    if not self.is_check:
+                        files = ' '.join(thumbnail_files)
+                        print('thumbnail files [{}]'.format(files))
+                        self.jav_dao.update_thumbnail(jav.id, files)
+                    else:
+                        print('is_check console copy thumbnail {}'.format(thumbnail_files))
 
             if not self.is_check:
                 self.__set_site_info(jav, match_maker)
 
             if len(thumbnail_files) <= 0:
+                self.err_thumbnail_count = self.err_thumbnail_count + 1
                 self.err_list.append('[{}] thubmanilなし {}'.format(jav.id, jav.title))
 
         for err in self.err_list:
