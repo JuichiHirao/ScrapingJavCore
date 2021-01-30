@@ -89,6 +89,27 @@ class JavDao(mysql_base.MysqlBase):
 
         self.conn.commit()
 
+    def get_exist_id(self, title: str) -> int:
+
+        if title is None or len(title) <= 0:
+            return False
+
+        sql = 'SELECT id ' \
+              '  FROM jav WHERE title = %s '
+
+        self.cursor.execute(sql, (title, ))
+
+        rs = self.cursor.fetchall()
+        exist = False
+
+        id = -1
+        if rs is not None:
+            for row in rs:
+                id = row[0]
+                break
+
+        return id
+
     def is_exist(self, title: str) -> bool:
 
         if title is None or len(title) <= 0:
@@ -176,6 +197,17 @@ class JavDao(mysql_base.MysqlBase):
 
         self.cursor.execute(sql, (package_filename, id))
         print("jav update id [" + str(id) + "]")
+
+        self.conn.commit()
+
+    def update_thumbnail(self, id, package_filename):
+
+        sql = 'UPDATE jav ' \
+                '  SET thumbnail = %s ' \
+              '  WHERE id = %s'
+
+        self.cursor.execute(sql, (package_filename, id))
+        print("jav update id [" + str(id) + "] thumbnail")
 
         self.conn.commit()
 

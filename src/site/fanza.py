@@ -30,17 +30,23 @@ class Fanza:
         split_p_number = p_number.split('-')
         urllib.request.install_opener(self.opener)
 
+        search_result_list = []
         try:
             with urllib.request.urlopen(url) as response:
                 html = response.read()
                 google_result_soup = BeautifulSoup(html, "html.parser")
-                div_r_list = google_result_soup.findAll('div', class_='r')
+                div_search = google_result_soup.select('#search')
+                div_rc_list = div_search[0].findAll('div', class_='rc')
+                # div_r_list = google_result_soup.findAll('div', class_='r')
 
-                for idx, div_r in enumerate(div_r_list):
-                    a_div_r = div_r.find('a')
+                for idx, div_rc in enumerate(div_rc_list):
+                    a_div_r = div_rc.find('a')
+                    if a_div_r is None:
+                        continue
                     url = a_div_r['href']
-
-                    site_data = self.__get_and_check_site_data(p_number, split_p_number, url)
+                    if url is not None:
+                        search_result_list.append(url)
+                        site_data = self.__get_and_check_site_data(p_number, split_p_number, url)
 
                     if site_data is not None:
                         break
@@ -71,17 +77,23 @@ class Fanza:
 
         urllib.request.install_opener(self.opener)
 
+        search_result_list = []
         try:
             with urllib.request.urlopen(url) as response:
                 html = response.read()
                 google_result_soup = BeautifulSoup(html, "html.parser")
-                div_r_list = google_result_soup.findAll('div', class_='r')
+                div_search = google_result_soup.select('#search')
+                div_rc_list = div_search[0].findAll('div', class_='rc')
+                # div_r_list = google_result_soup.findAll('div', class_='r')
 
-                for idx, div_r in enumerate(div_r_list):
-                    a_div_r = div_r.find('a')
+                for idx, div_rc in enumerate(div_rc_list):
+                    a_div_r = div_rc.find('a')
+                    if a_div_r is None:
+                        continue
                     url = a_div_r['href']
-
-                    site_data = self.__get_and_check_site_data(p_number, split_p_number, url)
+                    if url is not None:
+                        search_result_list.append(url)
+                        site_data = self.__get_and_check_site_data(p_number, split_p_number, url)
 
                     if site_data is not None:
                         break
@@ -150,8 +162,10 @@ class Fanza:
                 # print(str(idx) + ' ' + str(idx_sub) + ' 【' + str(td.text) + '】')
 
                 if before_name == '発売日':
-                    site_data.streamDate = td.text.strip()
+                    if len(td.text) <= 15:
+                        site_data.streamDate = td.text.strip()
                     before_name = ''
+
                 if re.search('発売日', td.text) or re.search('配信.*日', td.text):
                     before_name = '発売日'
 
